@@ -357,8 +357,8 @@ MigrationBackup/
 DirectXGame/DirectXGame.exe
 DirectXGame/imgui.ini
 
-!/KamataEngine/DirectXGame/lib/KamataEngine.lib/Debug/KamataEngineLib.lib
-!/KamataEngine/DirectXGame/lib/KamataEngine.lib/Debug/KamataEngineLib.idb
-!/KamataEngine/DirectXGame/lib/KamataEngine.lib/Debug/KamataEngineLib.pdb
-!/KamataEngine/DirectXGame/lib/KamataEngine.lib/Release/KamataEngineLib.lib
-!/KamataEngine/DirectXGame/lib/KamataEngine.lib/Release/KamataEngineLib.pdb
+!./KamataEngine/DirectXGame/lib/KamataEngine.lib/Debug/KamataEngineLib.lib
+!./KamataEngine/DirectXGame/lib/KamataEngine.lib/Debug/KamataEngineLib.idb
+!./KamataEngine/DirectXGame/lib/KamataEngine.lib/Debug/KamataEngineLib.pdb
+!./KamataEngine/DirectXGame/lib/KamataEngine.lib/Release/KamataEngineLib.lib
+!./KamataEngine/DirectXGame/lib/KamataEngine.lib/Release/KamataEngineLib.pdb
