@@ -1,5 +1,5 @@
 #include "MyMath.h"
-#include "Novice.h"
+#include <Novice.h>
 #include <cassert>
 
 float Determinant(const Matrix4x4& m)
