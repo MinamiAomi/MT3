@@ -3,9 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.4.33122.133
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "MT3", "Proj\MT3.vcxproj", "{E78255EF-3870-4684-8B5C-C936F3533F7A}"
-EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Novice", "KamataEngine\Novice\Novice.vcxproj", "{0BC4A122-F06A-4486-BA08-4C9ACCA4AAB0}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "MT3", "MT3\MT3.vcxproj", "{15414850-C2B2-46C4-9E51-237104C00CB0}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -13,14 +11,10 @@ Global
 		Release|x64 = Release|x64
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{E78255EF-3870-4684-8B5C-C936F3533F7A}.Debug|x64.ActiveCfg = Debug|x64
-		{E78255EF-3870-4684-8B5C-C936F3533F7A}.Debug|x64.Build.0 = Debug|x64
-		{E78255EF-3870-4684-8B5C-C936F3533F7A}.Release|x64.ActiveCfg = Release|x64
-		{E78255EF-3870-4684-8B5C-C936F3533F7A}.Release|x64.Build.0 = Release|x64
-		{0BC4A122-F06A-4486-BA08-4C9ACCA4AAB0}.Debug|x64.ActiveCfg = Debug|x64
-		{0BC4A122-F06A-4486-BA08-4C9ACCA4AAB0}.Debug|x64.Build.0 = Debug|x64
-		{0BC4A122-F06A-4486-BA08-4C9ACCA4AAB0}.Release|x64.ActiveCfg = Release|x64
-		{0BC4A122-F06A-4486-BA08-4C9ACCA4AAB0}.Release|x64.Build.0 = Release|x64
+		{15414850-C2B2-46C4-9E51-237104C00CB0}.Debug|x64.ActiveCfg = Debug|x64
+		{15414850-C2B2-46C4-9E51-237104C00CB0}.Debug|x64.Build.0 = Debug|x64
+		{15414850-C2B2-46C4-9E51-237104C00CB0}.Release|x64.ActiveCfg = Release|x64
+		{15414850-C2B2-46C4-9E51-237104C00CB0}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
