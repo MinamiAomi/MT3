@@ -2,8 +2,7 @@
 #include <Novice.h>
 #include <cassert>
 
-float Determinant(const Matrix4x4& m)
-{
+float Determinant(const Matrix4x4& m) {
 	float result = 0.0f;
 
 	result += m.m[0][0] * m.m[1][1] * m.m[2][2] * m.m[3][3]; // +11,22,33,44
@@ -41,8 +40,7 @@ float Determinant(const Matrix4x4& m)
 	return result;
 }
 
-Matrix4x4 Adjugate(const Matrix4x4& m)
-{
+Matrix4x4 Adjugate(const Matrix4x4& m) {
 	Matrix4x4 result = {};
 
 	// 1
@@ -183,8 +181,11 @@ Matrix4x4 Adjugate(const Matrix4x4& m)
 	return result;
 }
 
-Matrix4x4 MakeAffineMatrix(const Vector3& scale, const Vector3& rotate, const Vector3& trans)
-{
+Matrix4x4 Inverse(const Matrix4x4& m) {
+	return 1.0f / Determinant(m) * Adjugate(m);
+}
+
+Matrix4x4 MakeAffineMatrix(const Vector3& scale, const Vector3& rotate, const Vector3& trans) {
 	Matrix4x4 rot = MakeIdentityMatrix();
 	rot *= MakeRotateXMatrix(rotate.x);
 	rot *= MakeRotateYMatrix(rotate.y);
@@ -214,8 +215,38 @@ Matrix4x4 MakeAffineMatrix(const Vector3& scale, const Vector3& rotate, const Ve
 	return mat;
 }
 
-Vector3 Transform(const Vector3& v, const Matrix4x4& m)
-{
+Matrix4x4 MakePerspectiveFovMatrix(float fovY, float aspect, float nearZ, float farZ) {
+	float cotFov = 1.0f / std::tanf(fovY * 0.5f);
+	float farDivZLen = farZ / (farZ - nearZ);
+	return {
+		cotFov / aspect,	0.0f,		0.0f,					0.0f,
+		0.0f,				cotFov,		0.0f,					0.0f,
+		0.0f,				0.0f,		farDivZLen,				1.0f,
+		0.0f,				0.0f,		farDivZLen * -nearZ,	0.0f };
+}
+
+Matrix4x4 MakeOrthographicMatrix(float left, float top, float right, float bottom, float nearZ, float farZ) {
+	float width = right - left;
+	float height = top - bottom;
+	float zLen = farZ - nearZ;
+	return {
+		2.0f / width,				0.0f,						0.0f,			0.0f,
+		0.0f,						2.0f / height,				0.0f,			0.0f,
+		0.0f,						0.0f,						1.0f / zLen,	0.0f,
+		(left + right) / -width,	(top + bottom) / -height,	nearZ / -zLen,	1.0f };
+}
+
+Matrix4x4 MakeViewportMatrix(float left, float top, float width, float height, float minDepth, float maxDepth) {
+	float halfWidth = width * 0.5f;
+	float halfHeight = height * 0.5f;
+	return {
+		halfWidth,			0.0f,				0.0f,					0.0f,
+		0.0f,				-halfHeight,		0.0f,					0.0f,
+		0.0f,				0.0f,				maxDepth - minDepth,	0.0f,
+		left + halfWidth,	top + halfHeight,	minDepth,				1.0f };
+}
+
+Vector3 Transform(const Vector3& v, const Matrix4x4& m) {
 	Vector3 result = {};
 	result.x = v.x * m.m[0][0] + v.y * m.m[1][0] + v.z * m.m[2][0] + 1.0f * m.m[3][0];
 	result.y = v.x * m.m[0][1] + v.y * m.m[1][1] + v.z * m.m[2][1] + 1.0f * m.m[3][1];
@@ -226,16 +257,14 @@ Vector3 Transform(const Vector3& v, const Matrix4x4& m)
 	return result;
 }
 
-void VectorScreenPrintf(int x, int y, const Vector2& v, const char* label)
-{
+void VectorScreenPrintf(int x, int y, const Vector2& v, const char* label) {
 	constexpr int kColumnWidth = 60;
 	Novice::ScreenPrintf(x, y, "%.02f", v.x);
 	Novice::ScreenPrintf(x + kColumnWidth, y, "%.02f", v.y);
 	Novice::ScreenPrintf(x + kColumnWidth * 2, y, "%s", label);
 }
 
-void VectorScreenPrintf(int x, int y, const Vector3& v, const char* label)
-{
+void VectorScreenPrintf(int x, int y, const Vector3& v, const char* label) {
 	constexpr int kCoulumnWidth = 60;
 	Novice::ScreenPrintf(x, y, "%.02f", v.x);
 	Novice::ScreenPrintf(x + kCoulumnWidth, y, "%.02f", v.y);
@@ -243,15 +272,12 @@ void VectorScreenPrintf(int x, int y, const Vector3& v, const char* label)
 	Novice::ScreenPrintf(x + kCoulumnWidth * 3, y, "%s", label);
 }
 
-void MatrixScreenPrintf(int x, int y, const Matrix4x4& m, const char* label)
-{
+void MatrixScreenPrintf(int x, int y, const Matrix4x4& m, const char* label) {
 	constexpr int kRowHeight = 20;
 	constexpr int kColumnWidth = 60;
 	Novice::ScreenPrintf(x, y, "%s", label);
-	for (int row = 0; row < 4; ++row)
-	{
-		for (int column = 0; column < 4; ++column)
-		{
+	for (int row = 0; row < 4; ++row) {
+		for (int column = 0; column < 4; ++column) {
 			Novice::ScreenPrintf(x + column * kColumnWidth,
 				y + (row + 1) * kRowHeight, "%6.02f", m.m[row][column]);
 		}
