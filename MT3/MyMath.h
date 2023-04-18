@@ -10,6 +10,9 @@ namespace Math {
 	constexpr float Pi = 3.141592653589793f;
 	constexpr float TwoPi = Pi * 2.0f;
 	constexpr float HalfPi = Pi * 0.5f;
+
+	constexpr inline float ToRad(float deg) { return deg * Pi / 180.0f; }
+	constexpr inline float ToDeg(float rad) { return rad * 180.0f / Pi; }
 }
 
 inline Vector2 operator+(const Vector2& v);

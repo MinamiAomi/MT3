@@ -1,5 +1,8 @@
 #pragma once
 
+
+
+
 inline Vector2 operator+(const Vector2& v) {
 	return { +v.x,+v.y };
 }
