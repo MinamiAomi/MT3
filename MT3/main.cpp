@@ -91,6 +91,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 				int(screenVertices[2].x), int(screenVertices[2].y),
 				RED, kFillModeSolid);
 		}
+
+		Geometry::DrawSphere({ {}, 0.1f }, viewMatrix * projectionMatrix, viewportMatrix, BLACK, Geometry::kLine);
+
 		///
 		/// ↑描画処理ここまで
 		///

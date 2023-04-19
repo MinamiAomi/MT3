@@ -1,6 +1,7 @@
 #include "MyMath.h"
 #include <Novice.h>
 #include <cassert>
+#include <vector>
 
 float Determinant(const Matrix4x4& m) {
 	float result = 0.0f;
@@ -281,5 +282,75 @@ void MatrixScreenPrintf(int x, int y, const Matrix4x4& m, const char* label) {
 			Novice::ScreenPrintf(x + column * kColumnWidth,
 				y + (row + 1) * kRowHeight, "%6.02f", m.m[row][column]);
 		}
+	}
+}
+
+namespace {
+
+	const uint32_t kSubdivision = 12;
+	
+	
+	std::vector<Vector3> CreateUnitSphereIndices() {
+		const float kLatEvery = Math::TwoPi / kSubdivision;
+		const float kLonEvery = Math::Pi / kSubdivision;
+
+		const uint32_t kVertexCount = (kSubdivision - 1) * kSubdivision + 2;
+		std::vector<Vector3> vertices(kVertexCount);
+
+		vertices.front() = { 0.0f,1.0f,0.0f };
+		vertices.back() = { 0.0f,-1.0f,0.0f };
+
+		float theta = -Math::Pi * 0.5f;
+		float phi = 0.0f;
+		uint32_t vertexIndex = 1;
+
+		for (uint32_t latIndex = 0; latIndex < kSubdivision - 1; ++latIndex) {
+			theta += kLatEvery;
+			float cosTheta = std::cos(theta);
+			float sinTheta = std::sin(theta);
+
+			for (uint32_t lonIndex = 0; lonIndex < kSubdivision; ++lonIndex) {
+				phi += kLonEvery;
+				Vector3& vertex = vertices[vertexIndex++];
+				vertex.x = cosTheta * std::cos(phi);
+				vertex.y = sinTheta;
+				vertex.z = cosTheta * std::sin(phi);
+			}
+		}
+
+		return vertices;
+	}
+}
+
+void Geometry::DrawSphere(const Sphere& sphere, const Matrix4x4& viewProjection, const Matrix4x4& viewport, uint32_t color, TopologyType topologyType) {
+	static const std::vector<Vector3> kUnitSphereVertices = CreateUnitSphereIndices();
+
+	std::vector<Vector3> screenVertices(kUnitSphereVertices.size());
+	Matrix4x4 worldMatrix = MakeAffineMatrix({ sphere.radius, sphere.radius,sphere.radius }, { 0.0f,0.0f,0.0f }, sphere.center);
+	Matrix4x4 wvpvMatrix = worldMatrix * viewProjection * viewport;
+
+	for (size_t i = 0; i < kUnitSphereVertices.size(); ++i) {
+		screenVertices[i] = Transform(kUnitSphereVertices[i],wvpvMatrix);
+	}
+
+	switch (topologyType) {
+	case Geometry::kLine:
+		{
+			
+			for (uint32_t i = 0; i < kSubdivision - 2; ++i) {
+				
+				for (uint32_t j = 0; j < kSubdivision; ++j) {
+					uint32_t i1 = i * kSubdivision + j;
+					uint32_t i2 = (i + 1) * kSubdivision + j;
+					Novice::DrawLine(
+						int(screenVertices[i1].x), int(screenVertices[i1].y),
+						int(screenVertices[i2].x), int(screenVertices[i2].y),
+						color);
+				}
+			}
+		}
+		return;
+	case Geometry::kTriangle:
+		return;
 	}
 }

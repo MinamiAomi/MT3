@@ -15,6 +15,20 @@ namespace Math {
 	constexpr inline float ToDeg(float rad) { return rad * 180.0f / Pi; }
 }
 
+namespace Geometry {
+	enum TopologyType {
+		kLine,
+		kTriangle
+	};
+
+	struct Sphere {
+		Vector3 center;
+		float radius;
+	};
+
+	void DrawSphere(const Sphere& sphere, const Matrix4x4& viewProjection, const Matrix4x4& viewport, uint32_t color, TopologyType topologyType);
+}
+
 inline Vector2 operator+(const Vector2& v);
 inline Vector2 operator-(const Vector2& v);
 inline Vector2 operator+(const Vector2& v1, const Vector2& v2);
