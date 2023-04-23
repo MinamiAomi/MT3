@@ -26,7 +26,7 @@ namespace Geometry {
 		float radius;
 	};
 
-	void DrawSphere(const Sphere& sphere, const Matrix4x4& viewProjection, const Matrix4x4& viewport, uint32_t color, TopologyType topologyType);
+	void DrawSphere(const Sphere& sphere, const Vector3& rot, const Matrix4x4& viewProjection, const Matrix4x4& viewport, uint32_t color, TopologyType topologyType);
 }
 
 inline Vector2 operator+(const Vector2& v);

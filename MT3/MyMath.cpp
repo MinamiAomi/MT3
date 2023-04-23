@@ -288,11 +288,13 @@ void MatrixScreenPrintf(int x, int y, const Matrix4x4& m, const char* label) {
 namespace {
 
 	const uint32_t kSubdivision = 12;
-	
-	
+
+
 	std::vector<Vector3> CreateUnitSphereIndices() {
-		const float kLatEvery = Math::TwoPi / kSubdivision;
-		const float kLonEvery = Math::Pi / kSubdivision;
+		// 緯度変化量
+		const float kLatEvery = Math::Pi / kSubdivision;
+		// 経度変化量
+		const float kLonEvery = Math::TwoPi / kSubdivision;
 
 		const uint32_t kVertexCount = (kSubdivision - 1) * kSubdivision + 2;
 		std::vector<Vector3> vertices(kVertexCount);
@@ -300,7 +302,7 @@ namespace {
 		vertices.front() = { 0.0f,1.0f,0.0f };
 		vertices.back() = { 0.0f,-1.0f,0.0f };
 
-		float theta = -Math::Pi * 0.5f;
+		float theta = Math::Pi * 0.5f;
 		float phi = 0.0f;
 		uint32_t vertexIndex = 1;
 
@@ -322,34 +324,68 @@ namespace {
 	}
 }
 
-void Geometry::DrawSphere(const Sphere& sphere, const Matrix4x4& viewProjection, const Matrix4x4& viewport, uint32_t color, TopologyType topologyType) {
+void Geometry::DrawSphere(const Sphere& sphere, const Vector3& rot, const Matrix4x4& viewProjection, const Matrix4x4& viewport, uint32_t color, TopologyType topologyType) {
 	static const std::vector<Vector3> kUnitSphereVertices = CreateUnitSphereIndices();
 
 	std::vector<Vector3> screenVertices(kUnitSphereVertices.size());
-	Matrix4x4 worldMatrix = MakeAffineMatrix({ sphere.radius, sphere.radius,sphere.radius }, { 0.0f,0.0f,0.0f }, sphere.center);
+	Matrix4x4 worldMatrix = MakeAffineMatrix({ sphere.radius, sphere.radius,sphere.radius }, rot, sphere.center);
 	Matrix4x4 wvpvMatrix = worldMatrix * viewProjection * viewport;
 
 	for (size_t i = 0; i < kUnitSphereVertices.size(); ++i) {
-		screenVertices[i] = Transform(kUnitSphereVertices[i],wvpvMatrix);
+		screenVertices[i] = Transform(kUnitSphereVertices[i], wvpvMatrix);
 	}
+
+	Vector3 zero{ 0.0f,0.0f,0.0f };
+	zero = Transform(zero, wvpvMatrix);
 
 	switch (topologyType) {
 	case Geometry::kLine:
-		{
-			
-			for (uint32_t i = 0; i < kSubdivision - 2; ++i) {
-				
-				for (uint32_t j = 0; j < kSubdivision; ++j) {
-					uint32_t i1 = i * kSubdivision + j;
-					uint32_t i2 = (i + 1) * kSubdivision + j;
-					Novice::DrawLine(
-						int(screenVertices[i1].x), int(screenVertices[i1].y),
-						int(screenVertices[i2].x), int(screenVertices[i2].y),
-						color);
-				}
+	{
+		// 上下の傘になる経線
+		for (uint32_t i = 0; i < kSubdivision; ++i) {
+			{
+				uint32_t j = i + 1;
+				Novice::DrawLine(
+					int(screenVertices.front().x), int(screenVertices.front().y),
+					int(screenVertices[j].x), int(screenVertices[j].y),
+					color);
+			}
+			{
+				uint32_t j = (kSubdivision - 2) * kSubdivision + i + 1;
+				Novice::DrawLine(
+					int(screenVertices.back().x), int(screenVertices.back().y),
+					int(screenVertices[j].x), int(screenVertices[j].y),
+					color);
 			}
 		}
-		return;
+
+		// 上下点を除く経線
+		for (uint32_t i = 0; i < kSubdivision - 2; ++i) {			
+			for (uint32_t j = 0; j < kSubdivision; ++j) {
+				uint32_t i1 = i * kSubdivision + j + 1;
+				uint32_t i2 = (i + 1) * kSubdivision + j + 1;
+				Novice::DrawLine(
+					int(screenVertices[i1].x), int(screenVertices[i1].y),
+					int(screenVertices[i2].x), int(screenVertices[i2].y),
+					color);
+
+			}
+		}
+		// 緯線
+		for (uint32_t i = 0; i < kSubdivision - 1; ++i) {
+			for (uint32_t j = 0; j < kSubdivision; ++j) {
+				uint32_t k = (j + 1) % kSubdivision;
+				uint32_t i1 = i * kSubdivision + j + 1;
+				uint32_t i2 = i * kSubdivision + k + 1;
+				Novice::DrawLine(
+					int(screenVertices[i1].x), int(screenVertices[i1].y),
+					int(screenVertices[i2].x), int(screenVertices[i2].y),
+					color);
+
+			}
+		}
+	}
+	return;
 	case Geometry::kTriangle:
 		return;
 	}
