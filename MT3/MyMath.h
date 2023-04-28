@@ -5,6 +5,7 @@
 #include <Vector4.h>
 #include <Matrix4x4.h>
 #include <MyMath_inline.h>
+#include <vector>
 
 namespace Math {
 	constexpr float Pi = 3.141592653589793f;
@@ -15,19 +16,47 @@ namespace Math {
 	constexpr inline float ToDeg(float rad) { return rad * 180.0f / Pi; }
 }
 
-namespace Geometry {
-	enum TopologyType {
-		kLine,
-		kTriangle
-	};
+struct Sphere {
+	Vector3 center;
+	float radius;
+};
 
-	struct Sphere {
-		Vector3 center;
-		float radius;
-	};
+enum class CullMode {
+	kNone,
+	kBack,
+	kFront
+};
 
-	void DrawSphere(const Sphere& sphere, const Matrix4x4& viewProjection, const Matrix4x4& viewport, uint32_t color, TopologyType topologyType);
-}
+class RenderingPipeline {
+public:
+	Vector3 cameraPosition;
+
+	Matrix4x4 viewMatrix;
+	Matrix4x4 projectionMatrix;
+	Matrix4x4 viewportMatrix;
+
+	void SetWorldMatrix(const Matrix4x4& worldMatrix);
+	void SetCullMode(CullMode cullMode);
+	void SetIsWireFrame(bool isWireFrame);
+
+	Vector3 Apply(const Vector3& v);
+	
+	void DrawLine(const Vector3& v1, const Vector3& v2, uint32_t color);
+	void DrawTriangle(const Vector3& v1, const Vector3& v2, const Vector3& v3, uint32_t color);
+	void DrawTriangle(const Vector3* vertices, uint32_t color);
+	void DrawTriangle(const std::vector<Vector3>& vertices, uint32_t color);
+	void DrawGrid(float width = 10.0f, uint32_t subdivision = 10);
+	void DrawSphere(const Sphere& sphere, uint32_t color, uint32_t subdivision = 12);
+
+private:
+	Matrix4x4 m_wvpvMatrix = {};
+	CullMode m_cullMode = CullMode::kBack;
+	bool m_isWireFrame = false;
+};
+
+
+void DrawSphere(const Sphere& sphere, RenderingPipeline& renderingPipeline, uint32_t color, bool isWireFrame = true);
+
 
 inline Vector2 operator+(const Vector2& v);
 inline Vector2 operator-(const Vector2& v);

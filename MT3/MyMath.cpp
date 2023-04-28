@@ -217,7 +217,7 @@ Matrix4x4 MakeAffineMatrix(const Vector3& scale, const Vector3& rotate, const Ve
 }
 
 Matrix4x4 MakePerspectiveFovMatrix(float fovY, float aspect, float nearZ, float farZ) {
-	float cotFov = 1.0f / std::tanf(fovY * 0.5f);
+	float cotFov = 1.0f / std::tan(fovY * 0.5f);
 	float farDivZLen = farZ / (farZ - nearZ);
 	return {
 		cotFov / aspect,	0.0f,		0.0f,					0.0f,
@@ -285,72 +285,148 @@ void MatrixScreenPrintf(int x, int y, const Matrix4x4& m, const char* label) {
 	}
 }
 
-namespace {
 
-	const uint32_t kSubdivision = 12;
-	
-	
-	std::vector<Vector3> CreateUnitSphereIndices() {
-		const float kLatEvery = Math::TwoPi / kSubdivision;
-		const float kLonEvery = Math::Pi / kSubdivision;
-
-		const uint32_t kVertexCount = (kSubdivision - 1) * kSubdivision + 2;
-		std::vector<Vector3> vertices(kVertexCount);
-
-		vertices.front() = { 0.0f,1.0f,0.0f };
-		vertices.back() = { 0.0f,-1.0f,0.0f };
-
-		float theta = -Math::Pi * 0.5f;
-		float phi = 0.0f;
-		uint32_t vertexIndex = 1;
-
-		for (uint32_t latIndex = 0; latIndex < kSubdivision - 1; ++latIndex) {
-			theta += kLatEvery;
-			float cosTheta = std::cos(theta);
-			float sinTheta = std::sin(theta);
-
-			for (uint32_t lonIndex = 0; lonIndex < kSubdivision; ++lonIndex) {
-				phi += kLonEvery;
-				Vector3& vertex = vertices[vertexIndex++];
-				vertex.x = cosTheta * std::cos(phi);
-				vertex.y = sinTheta;
-				vertex.z = cosTheta * std::sin(phi);
-			}
-		}
-
-		return vertices;
-	}
+Vector3 RenderingPipeline::Apply(const Vector3& v) {
+	return Transform(v, m_wvpvMatrix);
 }
 
-void Geometry::DrawSphere(const Sphere& sphere, const Matrix4x4& viewProjection, const Matrix4x4& viewport, uint32_t color, TopologyType topologyType) {
-	static const std::vector<Vector3> kUnitSphereVertices = CreateUnitSphereIndices();
+void RenderingPipeline::DrawLine(const Vector3& v1, const Vector3& v2, uint32_t color) {
+	Vector3 a = Apply(v1);
+	Vector3 b = Apply(v2);
 
-	std::vector<Vector3> screenVertices(kUnitSphereVertices.size());
-	Matrix4x4 worldMatrix = MakeAffineMatrix({ sphere.radius, sphere.radius,sphere.radius }, { 0.0f,0.0f,0.0f }, sphere.center);
-	Matrix4x4 wvpvMatrix = worldMatrix * viewProjection * viewport;
+	Novice::DrawLine(static_cast<int>(a.x), static_cast<int>(a.y),
+		static_cast<int>(b.x), static_cast<int>(b.y), color);
+}
 
-	for (size_t i = 0; i < kUnitSphereVertices.size(); ++i) {
-		screenVertices[i] = Transform(kUnitSphereVertices[i],wvpvMatrix);
+void RenderingPipeline::DrawTriangle(const Vector3& v1, const Vector3& v2, const Vector3& v3, uint32_t color) {
+	Vector3 a = Apply(v1);
+	Vector3 b = Apply(v2);
+	Vector3 c = Apply(v3);
+	// ワイヤーフレーム表示
+	if (m_isWireFrame) {
+		Novice::DrawTriangle(
+			static_cast<int>(a.x), static_cast<int>(a.y),
+			static_cast<int>(b.x), static_cast<int>(b.y),
+			static_cast<int>(c.x), static_cast<int>(c.y),
+			color, kFillModeWireFrame);
+		return;
 	}
 
-	switch (topologyType) {
-	case Geometry::kLine:
+	switch (m_cullMode) {
+	case CullMode::kNone:
+		Novice::DrawTriangle(
+			static_cast<int>(a.x), static_cast<int>(a.y),
+			static_cast<int>(b.x), static_cast<int>(b.y),
+			static_cast<int>(c.x), static_cast<int>(c.y),
+			color, kFillModeSolid);
+		break;
+	default:
+	case CullMode::kBack:
 		{
-			
-			for (uint32_t i = 0; i < kSubdivision - 2; ++i) {
-				
-				for (uint32_t j = 0; j < kSubdivision; ++j) {
-					uint32_t i1 = i * kSubdivision + j;
-					uint32_t i2 = (i + 1) * kSubdivision + j;
-					Novice::DrawLine(
-						int(screenVertices[i1].x), int(screenVertices[i1].y),
-						int(screenVertices[i2].x), int(screenVertices[i2].y),
-						color);
-				}
+			Vector3 triangleNormal = Cross(b - a, c - b);
+			// 表なら
+			if (Dot({ 0.0f,0.0f,1.0f }, triangleNormal) <= 0) {
+				Novice::DrawTriangle(
+					static_cast<int>(a.x), static_cast<int>(a.y),
+					static_cast<int>(b.x), static_cast<int>(b.y),
+					static_cast<int>(c.x), static_cast<int>(c.y),
+					color, kFillModeSolid);
 			}
+			break;
 		}
-		return;
-	case Geometry::kTriangle:
-		return;
+	case CullMode::kFront:
+		{
+			Vector3 triangleNormal = Cross(b - a, c - b);
+			// 表なら
+			if (Dot({ 0.0f,0.0f,-1.0f }, triangleNormal) <= 0) {
+				Novice::DrawTriangle(
+					static_cast<int>(a.x), static_cast<int>(a.y),
+					static_cast<int>(b.x), static_cast<int>(b.y),
+					static_cast<int>(c.x), static_cast<int>(c.y),
+					color, kFillModeSolid);
+			}
+			break;
+		}
 	}
 }
+
+void RenderingPipeline::DrawTriangle(const Vector3* vertices, uint32_t color) {
+	DrawTriangle(vertices[0], vertices[1], vertices[2], color);
+}
+
+void RenderingPipeline::DrawTriangle(const std::vector<Vector3>& vertices, uint32_t color) {
+	DrawTriangle(vertices[0], vertices[1], vertices[2], color);
+}
+
+void RenderingPipeline::DrawGrid(float width, uint32_t subdivision) {
+	const float kGridHalfWidth = width * 0.5f;
+	const float kGridEvery = (width) / static_cast<float>(subdivision);
+
+	SetWorldMatrix(MakeIdentityMatrix());
+
+	for (uint32_t index = 0; index <= subdivision; ++index) {
+		float gridPos = index * kGridEvery - kGridHalfWidth;
+		Vector3 x1 = { kGridHalfWidth,0.0f, gridPos };
+		Vector3 x2 = { -kGridHalfWidth,0.0f, gridPos };
+		Vector3 z1 = { gridPos, 0.0f, kGridHalfWidth };
+		Vector3 z2 = { gridPos, 0.0f, -kGridHalfWidth };
+		uint32_t color = index == (subdivision * 0.5f) ? 0x000000FF : 0xAAAAAAFF;
+		DrawLine(x1, x2, color);
+		DrawLine(z1, z2, color);
+	}
+}
+
+void RenderingPipeline::DrawSphere(const Sphere& sphere, uint32_t color, uint32_t subdivision) {
+	assert(subdivision >= 3);
+
+	const float kLatEvery = Math::Pi / subdivision;
+	const float kLonEvery = Math::TwoPi / subdivision;
+
+	Matrix4x4 worldMatrix = MakeAffineMatrix({ sphere.radius, sphere.radius,sphere.radius }, { 0.0f,0.0f,0.0f }, sphere.center);
+	SetWorldMatrix(worldMatrix);
+
+	// θとΦから頂点座標を計算
+	auto CalcVertex = [this](float theta, float phi) {
+		Vector3 v{};
+		v.x = std::cos(theta) * std::cos(phi);
+		v.y = std::sin(theta);
+		v.z = std::cos(theta) * std::sin(phi);
+		return v;
+	};
+
+	Vector3 a{}, b{}, c{}, d{};
+
+	for (uint32_t latIndex = 0; latIndex < subdivision; ++latIndex) {
+		float lat = -Math::HalfPi + latIndex * kLatEvery;
+		for (uint32_t lonIndex = 0; lonIndex < subdivision; ++lonIndex) {
+			float lon = lonIndex * kLonEvery;
+
+			a = CalcVertex(lat, lon);
+			b = CalcVertex(lat + kLatEvery, lon);
+			c = CalcVertex(lat, lon + kLonEvery);
+
+			if (m_isWireFrame) {
+				DrawLine(a, b, color);
+				DrawLine(a, c, color);
+				continue;
+			}
+
+			d = CalcVertex(lat + kLatEvery, lon + kLonEvery);
+
+			DrawTriangle(a, b, c, color);
+			DrawTriangle(d, c, b, color);
+		}
+	}
+}
+
+void RenderingPipeline::SetWorldMatrix(const Matrix4x4& worldMatrix) {
+	m_wvpvMatrix = MakeIdentityMatrix();
+	m_wvpvMatrix *= worldMatrix;
+	m_wvpvMatrix *= viewMatrix;
+	m_wvpvMatrix *= projectionMatrix;
+	m_wvpvMatrix *= viewportMatrix;
+}
+
+void RenderingPipeline::SetCullMode(CullMode cullMode) { m_cullMode = cullMode; }
+
+void RenderingPipeline::SetIsWireFrame(bool isWireFrame) { m_isWireFrame = isWireFrame; }
