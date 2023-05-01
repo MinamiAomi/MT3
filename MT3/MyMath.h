@@ -77,11 +77,17 @@ inline Matrix4x4 MakeScaleMatrix(const Vector3& scale);
 inline Matrix4x4 MakeRotateXMatrix(float rad);
 inline Matrix4x4 MakeRotateYMatrix(float rad);
 inline Matrix4x4 MakeRotateZMatrix(float rad);
+inline Matrix4x4 MakeRotateXYZMatrix(const Vector3& rotate);
 inline Matrix4x4 MakeTranslateMatrix(const Vector3& trans);
 Matrix4x4 MakeAffineMatrix(const Vector3& scale, const Vector3& rotate, const Vector3& trans);
 Matrix4x4 MakePerspectiveFovMatrix(float fovY, float aspect, float nearZ, float farZ);
 Matrix4x4 MakeOrthographicMatrix(float left, float top, float right, float bottom, float nearZ, float farZ);
 Matrix4x4 MakeViewportMatrix(float left, float top, float width, float height, float minDepth, float maxDepth);
+
+inline Vector3 GetXAxis(const Matrix4x4& m);
+inline Vector3 GetYAxis(const Matrix4x4& m);
+inline Vector3 GetZAxis(const Matrix4x4& m);
+inline Vector3 GetTranslate(const Matrix4x4& m);
 
 Vector3 Transform(const Vector3& v, const Matrix4x4& m);
 inline Vector3 operator*(const Vector3& v, const Matrix4x4& m);

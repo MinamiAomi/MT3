@@ -18,12 +18,13 @@ public:
 	Matrix4x4 projectionMatrix;
 	Matrix4x4 viewportMatrix;
 
+	void Initalize(float windowWidth, float windowHeight);
 	void UpdateMatrix();
 
 	const Matrix4x4& GetVPVMatrix()const { return m_vpvMatrix; }
 
-	void SetCullMode(CullMode cullMode);
-	void SetIsWireFrame(bool isWireFrame);
+	void SetCullMode(CullMode cullMode) { m_cullMode = cullMode; }
+	void SetIsWireFrame(bool isWireFrame) { m_isWireFrame = isWireFrame; }
 
 	Vector3 Apply(const Vector3& v);
 

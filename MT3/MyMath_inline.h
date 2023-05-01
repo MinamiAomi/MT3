@@ -237,6 +237,9 @@ inline Matrix4x4 MakeRotateZMatrix(float rad) {
 		0.0f,	0.0f,	1.0f,	0.0f,
 		0.0f,	0.0f,	0.0f,	1.0f };
 }
+inline Matrix4x4 MakeRotateXYZMatrix(const Vector3& rotate) {
+	return MakeRotateXMatrix(rotate.x) * MakeRotateYMatrix(rotate.y) * MakeRotateZMatrix(rotate.z);
+}
 inline Matrix4x4 MakeTranslateMatrix(const Vector3& trans) {
 	return {
 		1.0f,		0.0f,		0.0f,		0.0f,
@@ -244,6 +247,23 @@ inline Matrix4x4 MakeTranslateMatrix(const Vector3& trans) {
 		0.0f,		0.0f,		1.0f,		0.0f,
 		trans.x,	trans.y,	trans.z,	1.0f };
 }
+
+inline Vector3 GetXAxis(const Matrix4x4& m) {
+	return { m.m[0][0],m.m[0][1],m.m[0][2] };
+}
+
+inline Vector3 GetYAxis(const Matrix4x4& m) {
+	return { m.m[1][0],m.m[1][1],m.m[1][2] };
+}
+
+inline Vector3 GetZAxis(const Matrix4x4& m) {
+	return { m.m[2][0],m.m[2][1],m.m[2][2] };
+}
+
+inline Vector3 GetTranslate(const Matrix4x4& m) {
+	return { m.m[3][0],m.m[3][1],m.m[3][2] };
+}
+
 
 inline Vector3 operator*(const Vector3& v, const Matrix4x4& m) {
 	return {

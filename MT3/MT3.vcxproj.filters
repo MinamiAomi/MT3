@@ -36,6 +36,9 @@
       <Filter>KamataEngine</Filter>
     </ClCompile>
     <ClCompile Include="MyMath.cpp" />
+    <ClCompile Include="Geometry.cpp" />
+    <ClCompile Include="RenderingPipeline.cpp" />
+    <ClCompile Include="Collision.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="C:\KamataEngine\DirectXGame\audio\Audio.h">
@@ -110,5 +113,8 @@
       <Filter>KamataEngine\Include</Filter>
     </ClInclude>
     <ClInclude Include="MyMath_inline.h" />
+    <ClInclude Include="Geometry.h" />
+    <ClInclude Include="ReneringPipeline.h" />
+    <ClInclude Include="Collision.h" />
   </ItemGroup>
 </Project>

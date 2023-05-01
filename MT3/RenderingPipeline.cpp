@@ -3,6 +3,31 @@
 #include <cassert>
 #include <algorithm>
 
+void RenderingPipeline::Initalize(float windowWidth, float windowHeight) {
+	// ビュー行列をセット
+	cameraRotate = { Math::ToRad(15.0f), 0.0f, 0.0f };
+	Vector3 forward = GetZAxis(MakeRotateXYZMatrix(cameraRotate));
+	cameraPosition = -forward * 6.0f;
+	// 射影行列をセット
+	projectionMatrix = MakePerspectiveFovMatrix(0.45f, windowWidth / windowHeight, 0.1f, 100.0f);
+	// ビューポート行列をセット
+	viewportMatrix = MakeViewportMatrix(0.0f, 0.0f, windowWidth, windowHeight, 0.0f, 1.0f);
+	// 行列を合成
+	UpdateMatrix();
+	SetCullMode(CullMode::kBack);
+	SetIsWireFrame(true);
+}
+
+void RenderingPipeline::UpdateMatrix() {
+	Matrix4x4 cameraMat = MakeAffineMatrix({ 1.0f,1.0f,1.0f }, cameraRotate, cameraPosition);
+	viewMatrix = Inverse(cameraMat);
+
+	m_vpvMatrix = MakeIdentityMatrix();
+	m_vpvMatrix *= viewMatrix;
+	m_vpvMatrix *= projectionMatrix;
+	m_vpvMatrix *= viewportMatrix;
+}
+
 Vector3 RenderingPipeline::Apply(const Vector3& v) {
 	return Transform(v, m_vpvMatrix);
 }
@@ -146,16 +171,3 @@ void RenderingPipeline::DrawSegment(const Segment& segment, uint32_t color) {
 	DrawLine(segment.origin, segment.origin + segment.diff, color);
 }
 
-void RenderingPipeline::UpdateMatrix() {
-	Matrix4x4 cameraMat = MakeAffineMatrix({ 1.0f,1.0f,1.0f }, cameraRotate, cameraPosition);
-	viewMatrix = Inverse(cameraMat);
-
-	m_vpvMatrix = MakeIdentityMatrix();
-	m_vpvMatrix *= viewMatrix;
-	m_vpvMatrix *= projectionMatrix;
-	m_vpvMatrix *= viewportMatrix;
-}
-
-void RenderingPipeline::SetCullMode(CullMode cullMode) { m_cullMode = cullMode; }
-
-void RenderingPipeline::SetIsWireFrame(bool isWireFrame) { m_isWireFrame = isWireFrame; }
