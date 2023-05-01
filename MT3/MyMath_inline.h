@@ -1,3 +1,4 @@
+#include "MyMath.h"
 #pragma once
 
 inline Vector2 operator+(const Vector2& v) {
@@ -53,6 +54,15 @@ inline float Length(const Vector2& v) {
 }
 inline Vector2 Normalize(const Vector2& v) {
 	return v * (1.0f / Length(v));
+}
+
+inline Vector2 Project(const Vector2& v1, const Vector2& v2) {
+	Vector2 normV2 = Normalize(v2);
+	return Dot(v1, normV2) * normV2;
+}
+
+inline Vector2 Lerp(const Vector2& start, const Vector2& end, float t) {
+	return start + t * (end - start);
 }
 
 inline Vector3 operator+(const Vector3& v) {
@@ -114,6 +124,15 @@ inline float Length(const Vector3& v) {
 }
 inline Vector3 Normalize(const Vector3& v) {
 	return v * (1.0f / Length(v));
+}
+
+inline Vector3 Lerp(const Vector3& start, const Vector3& end, float t) {
+	return start + t * (end - start);
+}
+
+inline Vector3 Project(const Vector3& v1, const Vector3& v2) {
+	Vector3 normV2 = Normalize(v2);
+	return Dot(v1, normV2) * normV2;
 }
 
 inline Matrix4x4 operator+(const Matrix4x4& m1, const Matrix4x4& m2) {

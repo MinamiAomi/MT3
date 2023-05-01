@@ -5,7 +5,7 @@
 #include <Vector4.h>
 #include <Matrix4x4.h>
 #include <MyMath_inline.h>
-#include <vector>
+#include "Geometry.h"
 
 namespace Math {
 	constexpr float Pi = 3.141592653589793f;
@@ -16,47 +16,13 @@ namespace Math {
 	constexpr inline float ToDeg(float rad) { return rad * 180.0f / Pi; }
 }
 
-struct Sphere {
-	Vector3 center;
-	float radius;
-};
-
-enum class CullMode {
-	kNone,
-	kBack,
-	kFront
-};
-
-class RenderingPipeline {
-public:
-	Vector3 cameraPosition;
-
-	Matrix4x4 viewMatrix;
-	Matrix4x4 projectionMatrix;
-	Matrix4x4 viewportMatrix;
-
-	void SetWorldMatrix(const Matrix4x4& worldMatrix);
-	void SetCullMode(CullMode cullMode);
-	void SetIsWireFrame(bool isWireFrame);
-
-	Vector3 Apply(const Vector3& v);
-	
-	void DrawLine(const Vector3& v1, const Vector3& v2, uint32_t color);
-	void DrawTriangle(const Vector3& v1, const Vector3& v2, const Vector3& v3, uint32_t color);
-	void DrawTriangle(const Vector3* vertices, uint32_t color);
-	void DrawTriangle(const std::vector<Vector3>& vertices, uint32_t color);
-	void DrawGrid(float width = 10.0f, uint32_t subdivision = 10);
-	void DrawSphere(const Sphere& sphere, uint32_t color, uint32_t subdivision = 12);
-
-private:
-	Matrix4x4 m_wvpvMatrix = {};
-	CullMode m_cullMode = CullMode::kBack;
-	bool m_isWireFrame = false;
-};
-
-
-void DrawSphere(const Sphere& sphere, RenderingPipeline& renderingPipeline, uint32_t color, bool isWireFrame = true);
-
+static const Vector2 kVector2Zero{ 0.0f,0.0f };
+static const Vector2 kVector2UnitX{ 1.0f,0.0f };
+static const Vector2 kVector2UnitY{ 0.0f,1.0f };
+static const Vector3 kVector3Zero{ 0.0f,0.0f,0.0f };
+static const Vector3 kVector3UnitX{ 1.0f,0.0f,0.0f };
+static const Vector3 kVector3UnitY{ 0.0f,1.0f,0.0f };
+static const Vector3 kVector3UnitZ{ 0.0f,0.0f,1.0f };
 
 inline Vector2 operator+(const Vector2& v);
 inline Vector2 operator-(const Vector2& v);
@@ -74,6 +40,9 @@ inline float Cross(const Vector2& v1, const Vector2& v2);
 inline float LengthSquare(const Vector2& v);
 inline float Length(const Vector2& v);
 inline Vector2 Normalize(const Vector2& v);
+inline Vector2 Project(const Vector2& v1, const Vector2& v2);
+inline Vector2 Lerp(const Vector2& start, const Vector2& end, float t);
+
 inline Vector3 operator+(const Vector3& v);
 inline Vector3 operator-(const Vector3& v);
 inline Vector3 operator+(const Vector3& v1, const Vector3& v2);
@@ -90,6 +59,8 @@ inline Vector3 Cross(const Vector3& v1, const Vector3& v2);
 inline float LengthSquare(const Vector3& v);
 inline float Length(const Vector3& v);
 inline Vector3 Normalize(const Vector3& v);
+inline Vector3 Lerp(const Vector3& start, const Vector3& end, float t);
+inline Vector3 Project(const Vector3& v1, const Vector3& v2);
 
 inline Matrix4x4 operator+(const Matrix4x4& m1, const Matrix4x4& m2);
 inline Matrix4x4 operator-(const Matrix4x4& m1, const Matrix4x4& m2);
@@ -119,3 +90,7 @@ inline Vector3 operator*(const Vector3& v, const Matrix4x4& m);
 void VectorScreenPrintf(int x, int y, const Vector2& v, const char* label);
 void VectorScreenPrintf(int x, int y, const Vector3& v, const char* label);
 void MatrixScreenPrintf(int x, int y, const Matrix4x4& m, const char* label);
+
+Vector3 ClosestPoint(const Vector3& point, const Line& line);
+Vector3 ClosestPoint(const Vector3& point, const Ray& ray);
+Vector3 ClosestPoint(const Vector3& point, const Segment& segment);
