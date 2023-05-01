@@ -28,7 +28,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	RenderingPipeline renderingPipeline{};
 	renderingPipeline.Initalize(static_cast<float>(kWindowWidth), static_cast<float>(kWindowHeight));
 
-	Sphere sphere{ { 1.0f, 0.0f, 0.0f }, 1.0f };
+	Segment segment{ { 0.0f, 0.0f, 0.0f }, {0.0f,1.0f,0.0f} };
 	Plane plane{ kVector3UnitY,0.0f };
 
 	uint32_t color = WHITE;
@@ -47,14 +47,14 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		ImGui::SetNextWindowPos({ (float)kWindowWidth - 300.0f, 0.0f }, ImGuiCond_Once);
 		ImGui::SetNextWindowSize({ 300.0f, 130.0f }, ImGuiCond_Once);
 		ImGui::Begin("Window");
-		ImGui::DragFloat3("Sphere1 center", &sphere.center.x, 0.01f);
-		ImGui::DragFloat("Sphere1 radius", &sphere.radius, 0.01f);
+		ImGui::DragFloat3("Segment origin", &segment.origin.x, 0.01f);
+		ImGui::DragFloat3("Segment diff", &segment.diff.x, 0.01f);
 		ImGui::DragFloat3("Plane normal", &plane.normal.x, 0.01f);
 		ImGui::DragFloat("Plane distance", &plane.distance, 0.01f);
 		ImGui::End();
 		plane.normal = Normalize(plane.normal);
 
-		color = IsCollision(sphere, plane) ? RED : WHITE;
+		color = IsCollision(segment, plane) ? RED : WHITE;
 
 		///
 		/// ↑更新処理ここまで
@@ -66,7 +66,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 		renderingPipeline.DrawGrid(4);
 
-		renderingPipeline.DrawSphere(sphere, color);
+		renderingPipeline.DrawSegment(segment, color);
 		renderingPipeline.DrawPlane(plane, color);
 
 		///
