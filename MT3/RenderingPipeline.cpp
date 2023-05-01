@@ -171,3 +171,38 @@ void RenderingPipeline::DrawSegment(const Segment& segment, uint32_t color) {
 	DrawLine(segment.origin, segment.origin + segment.diff, color);
 }
 
+void RenderingPipeline::DrawPlane(const Plane& plane, uint32_t color, float size) {
+	Vector3 center = plane.distance * plane.normal;
+
+	auto Perpendicular = [](const Vector3& v) {
+		if (v.x != 0.0f || v.y != 0.0f) {
+			return Vector3(-v.y, v.x, 0.0f);
+		}
+		return Vector3(0.0f, -v.z, v.y);
+	};
+
+	Vector3 vertices[4] = {};
+	vertices[0] = Normalize(Perpendicular(plane.normal));
+	vertices[1] = Cross(plane.normal, vertices[0]);
+	vertices[2] = -vertices[0];
+	vertices[3] = -vertices[1];
+
+	float scale = size * 0.5f;
+
+	for (auto& vertex : vertices) {
+		vertex *= scale;
+		vertex += center;
+	}
+
+	if (m_isWireFrame) {
+		for (uint32_t i = 0; i < 4; i++) {
+			uint32_t j = (i + 1) % 4;
+			DrawLine(vertices[i], vertices[j], color);
+		}
+	}
+	else {
+		DrawTriangle(vertices[2], vertices[1], vertices[0], color);
+		DrawTriangle(vertices[0], vertices[3], vertices[2], color);
+	}
+}
+

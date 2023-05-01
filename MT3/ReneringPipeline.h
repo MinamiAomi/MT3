@@ -41,6 +41,7 @@ public:
 	void DrawLine(const Line& line, uint32_t color);
 	void DrawRay(const Ray& ray, uint32_t color);
 	void DrawSegment(const Segment& segment, uint32_t color);
+	void DrawPlane(const Plane& plane, uint32_t color, float size = 2.0f);
 
 
 private:

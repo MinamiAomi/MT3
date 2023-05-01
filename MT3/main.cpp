@@ -28,10 +28,10 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	RenderingPipeline renderingPipeline{};
 	renderingPipeline.Initalize(static_cast<float>(kWindowWidth), static_cast<float>(kWindowHeight));
 
-	Sphere sphere1{ { 1.0f, 0.0f, 0.0f }, 1.0f };
-	Sphere sphere2{ { -1.0f, 0.0f, 1.0f }, 0.5f };
+	Sphere sphere{ { 1.0f, 0.0f, 0.0f }, 1.0f };
+	Plane plane{ kVector3UnitY,0.0f };
 
-	uint32_t sphereColor = WHITE;
+	uint32_t color = WHITE;
 
 	// ウィンドウの×ボタンが押されるまでループ
 	while (Novice::ProcessMessage() == 0) {
@@ -47,13 +47,14 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		ImGui::SetNextWindowPos({ (float)kWindowWidth - 300.0f, 0.0f }, ImGuiCond_Once);
 		ImGui::SetNextWindowSize({ 300.0f, 130.0f }, ImGuiCond_Once);
 		ImGui::Begin("Window");
-		ImGui::DragFloat3("Sphere1 center", &sphere1.center.x, 0.01f);
-		ImGui::DragFloat("Sphere1 radius", &sphere1.radius, 0.01f);
-		ImGui::DragFloat3("Sphere2 center", &sphere2.center.x, 0.01f);
-		ImGui::DragFloat("Sphere2 radius", &sphere2.radius, 0.01f);
+		ImGui::DragFloat3("Sphere1 center", &sphere.center.x, 0.01f);
+		ImGui::DragFloat("Sphere1 radius", &sphere.radius, 0.01f);
+		ImGui::DragFloat3("Plane normal", &plane.normal.x, 0.01f);
+		ImGui::DragFloat("Plane distance", &plane.distance, 0.01f);
 		ImGui::End();
+		plane.normal = Normalize(plane.normal);
 
-		sphereColor = IsCollision(sphere1, sphere2) ? RED : WHITE;
+		color = IsCollision(sphere, plane) ? RED : WHITE;
 
 		///
 		/// ↑更新処理ここまで
@@ -65,8 +66,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 		renderingPipeline.DrawGrid(4);
 
-		renderingPipeline.DrawSphere(sphere1, sphereColor);
-		renderingPipeline.DrawSphere(sphere2, sphereColor);
+		renderingPipeline.DrawSphere(sphere, color);
+		renderingPipeline.DrawPlane(plane, color);
 
 		///
 		/// ↑描画処理ここまで
