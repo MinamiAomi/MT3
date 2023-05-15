@@ -14,8 +14,6 @@ void RenderingPipeline::Initalize(float windowWidth, float windowHeight) {
 	viewportMatrix = MakeViewportMatrix(0.0f, 0.0f, windowWidth, windowHeight, 0.0f, 1.0f);
 	// 行列を合成
 	UpdateMatrix();
-	SetCullMode(CullMode::kBack);
-	SetIsWireFrame(true);
 }
 
 void RenderingPipeline::UpdateMatrix() {
@@ -28,8 +26,9 @@ void RenderingPipeline::UpdateMatrix() {
 	m_vpvMatrix *= viewportMatrix;
 }
 
-Vector3 RenderingPipeline::Apply(const Vector3& v) {
-	return Transform(v, m_vpvMatrix);
+void RenderingPipeline::ScreenDrawLine(const Vector3& v1, const Vector3& v2, uint32_t color) {
+	Novice::DrawLine(static_cast<int>(v1.x), static_cast<int>(v1.y),
+		static_cast<int>(v2.x), static_cast<int>(v2.y), color);
 }
 
 void RenderingPipeline::DrawLine(const Vector3& v1, const Vector3& v2, uint32_t color) {
@@ -38,66 +37,6 @@ void RenderingPipeline::DrawLine(const Vector3& v1, const Vector3& v2, uint32_t 
 
 	Novice::DrawLine(static_cast<int>(a.x), static_cast<int>(a.y),
 		static_cast<int>(b.x), static_cast<int>(b.y), color);
-}
-
-void RenderingPipeline::DrawTriangle(const Vector3& v1, const Vector3& v2, const Vector3& v3, uint32_t color) {
-	Vector3 a = Apply(v1);
-	Vector3 b = Apply(v2);
-	Vector3 c = Apply(v3);
-	// ワイヤーフレーム表示
-	if (m_isWireFrame) {
-		Novice::DrawTriangle(
-			static_cast<int>(a.x), static_cast<int>(a.y),
-			static_cast<int>(b.x), static_cast<int>(b.y),
-			static_cast<int>(c.x), static_cast<int>(c.y),
-			color, kFillModeWireFrame);
-		return;
-	}
-
-	switch (m_cullMode) {
-	case CullMode::kNone:
-		Novice::DrawTriangle(
-			static_cast<int>(a.x), static_cast<int>(a.y),
-			static_cast<int>(b.x), static_cast<int>(b.y),
-			static_cast<int>(c.x), static_cast<int>(c.y),
-			color, kFillModeSolid);
-		break;
-	default:
-	case CullMode::kBack:
-	{
-		Vector3 triangleNormal = Cross(b - a, c - b);
-		// 表なら
-		if (Dot({ 0.0f,0.0f,1.0f }, triangleNormal) <= 0) {
-			Novice::DrawTriangle(
-				static_cast<int>(a.x), static_cast<int>(a.y),
-				static_cast<int>(b.x), static_cast<int>(b.y),
-				static_cast<int>(c.x), static_cast<int>(c.y),
-				color, kFillModeSolid);
-		}
-		break;
-	}
-	case CullMode::kFront:
-	{
-		Vector3 triangleNormal = Cross(b - a, c - b);
-		// 表なら
-		if (Dot({ 0.0f,0.0f,-1.0f }, triangleNormal) <= 0) {
-			Novice::DrawTriangle(
-				static_cast<int>(a.x), static_cast<int>(a.y),
-				static_cast<int>(b.x), static_cast<int>(b.y),
-				static_cast<int>(c.x), static_cast<int>(c.y),
-				color, kFillModeSolid);
-		}
-		break;
-	}
-	}
-}
-
-void RenderingPipeline::DrawTriangle(const Vector3* vertices, uint32_t color) {
-	DrawTriangle(vertices[0], vertices[1], vertices[2], color);
-}
-
-void RenderingPipeline::DrawTriangle(const std::vector<Vector3>& vertices, uint32_t color) {
-	DrawTriangle(vertices[0], vertices[1], vertices[2], color);
 }
 
 void RenderingPipeline::DrawGrid(float width, uint32_t subdivision) {
@@ -131,7 +70,7 @@ void RenderingPipeline::DrawSphere(const Sphere& sphere, uint32_t color, uint32_
 		v.y = std::sin(theta);
 		v.z = std::cos(theta) * std::sin(phi);
 		v = v * sphere.radius + sphere.center;
-		return v;
+		return Apply(v);
 	};
 
 	Vector3 a{}, b{}, c{}, d{};
@@ -145,16 +84,8 @@ void RenderingPipeline::DrawSphere(const Sphere& sphere, uint32_t color, uint32_
 			b = CalcVertex(lat + kLatEvery, lon);
 			c = CalcVertex(lat, lon + kLonEvery);
 
-			if (m_isWireFrame) {
-				DrawLine(a, b, color);
-				DrawLine(a, c, color);
-				continue;
-			}
-
-			d = CalcVertex(lat + kLatEvery, lon + kLonEvery);
-
-			DrawTriangle(a, b, c, color);
-			DrawTriangle(d, c, b, color);
+			ScreenDrawLine(a, b, color);
+			ScreenDrawLine(a, c, color);
 		}
 	}
 }
@@ -192,17 +123,26 @@ void RenderingPipeline::DrawPlane(const Plane& plane, uint32_t color, float size
 	for (auto& vertex : vertices) {
 		vertex *= scale;
 		vertex += center;
+		vertex = Apply(vertex);
 	}
 
-	if (m_isWireFrame) {
-		for (uint32_t i = 0; i < 4; i++) {
-			uint32_t j = (i + 1) % 4;
-			DrawLine(vertices[i], vertices[j], color);
-		}
+	uint32_t i = 0;
+	uint32_t j = 0;
+	for (; i < 4; i++) {
+		j = (i + 1) % 4;
+		ScreenDrawLine(vertices[i], vertices[j], color);
 	}
-	else {
-		DrawTriangle(vertices[2], vertices[1], vertices[0], color);
-		DrawTriangle(vertices[0], vertices[3], vertices[2], color);
-	}
+}
+
+void RenderingPipeline::DrawTriangle(const Triangle& triangle, uint32_t color) {
+	const Vector3 vertices[] = {
+		Apply(triangle.vertices[0]),
+		Apply(triangle.vertices[1]),
+		Apply(triangle.vertices[2]),
+	};
+	Novice::DrawTriangle(
+		static_cast<int>(vertices[0].x), static_cast<int>(vertices[0].y),
+		static_cast<int>(vertices[1].x), static_cast<int>(vertices[1].y),
+		static_cast<int>(vertices[2].x), static_cast<int>(vertices[2].y), color, kFillModeWireFrame);
 }
 

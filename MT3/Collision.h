@@ -3,6 +3,9 @@
 
 bool IsCollision(const Sphere& sphere1, const Sphere& sphere2);
 bool IsCollision(const Sphere& sphere, const Plane& plane);
-bool IsCollision(const Line& line, const Plane& plane);
-bool IsCollision(const Ray& ray, const Plane& plane);
-bool IsCollision(const Segment& segment, const Plane& plane);
+bool IsCollision(const Plane& plane, const Line& line);
+bool IsCollision(const Plane& plane, const Ray& ray);
+bool IsCollision(const Plane& plane, const Segment& segment);
+bool IsCollision(const Triangle& triangle, const Line& line);
+bool IsCollision(const Triangle& triangle, const Ray& ray);
+bool IsCollision(const Triangle& triangle, const Segment& segment);

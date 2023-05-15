@@ -1,7 +1,7 @@
 #include "MyMath.h"
 #include <Novice.h>
 #include <cassert>
-#include <algorithm>
+
 
 float Determinant(const Matrix4x4& m) {
 	float result = 0.0f;
@@ -285,23 +285,3 @@ void MatrixScreenPrintf(int x, int y, const Matrix4x4& m, const char* label) {
 	}
 }
 
-Vector3 ClosestPoint(const Vector3& point, const Line& line) {
-	return line.origin + Project(point - line.origin, line.diff);
-}
-
-Vector3 ClosestPoint(const Vector3& point, const Ray& ray) {
-	Vector3 rayDir = Normalize(ray.diff);
-	float dis = Dot(point - ray.origin, rayDir);
-	dis = (std::max)(dis, 0.0f);
-	Vector3 proj = dis * rayDir;
-	return ray.origin + proj;
-}
-
-Vector3 ClosestPoint(const Vector3& point, const Segment& segment) {
-	float segLen = Length(segment.diff);
-	Vector3 segDir = segment.diff * (1.0f / segLen);
-	float dis = Dot(point - segment.origin, segDir);
-	dis = std::clamp(dis, 0.0f, segLen);
-	Vector3 proj = dis * segDir;
-	return segment.origin + proj;
-}

@@ -28,10 +28,11 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	RenderingPipeline renderingPipeline{};
 	renderingPipeline.Initalize(static_cast<float>(kWindowWidth), static_cast<float>(kWindowHeight));
 
-	Segment segment{ { 0.0f, 0.0f, 0.0f }, {0.0f,1.0f,0.0f} };
-	Plane plane{ kVector3UnitY,0.0f };
+	Segment segment{ { 0.0f, 1.5f, 1.0f }, {0.0f,-2.0f,-2.0f} };
+	Triangle triangle{ {{0.0f,1.0f,0.0f},{1.0f,0.0f,0.0f},{-1.0f,0.0f,0.0f}} };
 
 	uint32_t color = WHITE;
+	Vector3 point{};
 
 	// ウィンドウの×ボタンが押されるまでループ
 	while (Novice::ProcessMessage() == 0) {
@@ -44,17 +45,19 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 		MoveCamera(renderingPipeline);
 
-		ImGui::SetNextWindowPos({ (float)kWindowWidth - 300.0f, 0.0f }, ImGuiCond_Once);
-		ImGui::SetNextWindowSize({ 300.0f, 130.0f }, ImGuiCond_Once);
+		ImGui::SetNextWindowPos({ (float)kWindowWidth - 330.0f, 0.0f }, ImGuiCond_Once);
+		ImGui::SetNextWindowSize({ 330.0f, 170.0f }, ImGuiCond_Once);
 		ImGui::Begin("Window");
 		ImGui::DragFloat3("Segment origin", &segment.origin.x, 0.01f);
 		ImGui::DragFloat3("Segment diff", &segment.diff.x, 0.01f);
-		ImGui::DragFloat3("Plane normal", &plane.normal.x, 0.01f);
-		ImGui::DragFloat("Plane distance", &plane.distance, 0.01f);
+		ImGui::DragFloat3("Triangle v0", &triangle.vertices[0].x, 0.01f);
+		ImGui::DragFloat3("Triangle v1", &triangle.vertices[1].x, 0.01f);
+		ImGui::DragFloat3("Triangle v2", &triangle.vertices[2].x, 0.01f);
+		Intersection(triangle, segment, point);
+		ImGui::Text("Intersection point : %.3f, %.3f, %.3f", point.x, point.y, point.z);
 		ImGui::End();
-		plane.normal = Normalize(plane.normal);
 
-		color = IsCollision(segment, plane) ? RED : WHITE;
+		color = IsCollision(triangle, segment) ? RED : WHITE;
 
 		///
 		/// ↑更新処理ここまで
@@ -67,7 +70,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		renderingPipeline.DrawGrid(4);
 
 		renderingPipeline.DrawSegment(segment, color);
-		renderingPipeline.DrawPlane(plane, color);
+		renderingPipeline.DrawTriangle(triangle, color);
+		renderingPipeline.DrawSphere({ point,0.02f }, GREEN);
 
 		///
 		/// ↑描画処理ここまで

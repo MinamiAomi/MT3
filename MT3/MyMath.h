@@ -96,7 +96,3 @@ inline Vector3 operator*(const Vector3& v, const Matrix4x4& m);
 void VectorScreenPrintf(int x, int y, const Vector2& v, const char* label);
 void VectorScreenPrintf(int x, int y, const Vector3& v, const char* label);
 void MatrixScreenPrintf(int x, int y, const Matrix4x4& m, const char* label);
-
-Vector3 ClosestPoint(const Vector3& point, const Line& line);
-Vector3 ClosestPoint(const Vector3& point, const Ray& ray);
-Vector3 ClosestPoint(const Vector3& point, const Segment& segment);

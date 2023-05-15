@@ -23,15 +23,12 @@ public:
 
 	const Matrix4x4& GetVPVMatrix()const { return m_vpvMatrix; }
 
-	void SetCullMode(CullMode cullMode) { m_cullMode = cullMode; }
-	void SetIsWireFrame(bool isWireFrame) { m_isWireFrame = isWireFrame; }
+	inline Vector3 Apply(const Vector3& v) {
+		return Transform(v, m_vpvMatrix);
+	}
 
-	Vector3 Apply(const Vector3& v);
-
+	void ScreenDrawLine(const Vector3& v1, const Vector3& v2, uint32_t color);
 	void DrawLine(const Vector3& v1, const Vector3& v2, uint32_t color);
-	void DrawTriangle(const Vector3& v1, const Vector3& v2, const Vector3& v3, uint32_t color);
-	void DrawTriangle(const Vector3* vertices, uint32_t color);
-	void DrawTriangle(const std::vector<Vector3>& vertices, uint32_t color);
 	void DrawGrid(float width = 10.0f, uint32_t subdivision = 10);
 
 	///
@@ -42,10 +39,9 @@ public:
 	void DrawRay(const Ray& ray, uint32_t color);
 	void DrawSegment(const Segment& segment, uint32_t color);
 	void DrawPlane(const Plane& plane, uint32_t color, float size = 2.0f);
+	void DrawTriangle(const Triangle& triangle, uint32_t color);
 
 
 private:
 	Matrix4x4 m_vpvMatrix = {};
-	CullMode m_cullMode = CullMode::kBack;
-	bool m_isWireFrame = false;
 };

@@ -27,3 +27,24 @@ struct Plane {
 	Vector3 normal; // 法線
 	float distance; // 距離
 };
+// 三角形
+struct Triangle {
+	Vector3 vertices[3];
+};
+
+Plane MakePlaneFromPointAndNormal(const Vector3& point, const Vector3 normal);
+Plane MakePlaneFromTriangle(const Triangle& triangle);
+
+Vector3 ClosestPoint(const Vector3& point, const Line& line);
+Vector3 ClosestPoint(const Vector3& point, const Ray& ray);
+Vector3 ClosestPoint(const Vector3& point, const Segment& segment);
+
+bool Intersection(const Plane& plane, const Line& line, Vector3& out_intersectionPoint);
+bool Intersection(const Plane& plane, const Ray& ray, Vector3& out_intersectionPoint);
+bool Intersection(const Plane& plane, const Segment& segment, Vector3& out_intersectionPoint);
+bool Intersection(const Triangle& triangle, const Line& line, Vector3& out_intersectionPoint);
+bool Intersection(const Triangle& triangle, const Ray& ray, Vector3& out_intersectionPoint);
+bool Intersection(const Triangle& triangle, const Segment& segment, Vector3& out_intersectionPoint);
+
+Vector3 CalcNormal(const Vector3& a, const Vector3& b, const Vector3& c);
+Vector3 CalcNormal(const Triangle& triangle);
