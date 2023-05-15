@@ -1,5 +1,6 @@
 #include "Collision.h"
 #include "MyMath.h"
+#include <algorithm>
 
 bool IsCollision(const Sphere& s1, const Sphere& s2) {
 	return LengthSquare(s2.center - s1.center) <= (s1.radius + s2.radius) * (s1.radius + s2.radius);
@@ -45,4 +46,9 @@ bool IsCollision(const AABB& aabb1, const AABB& aabb2) {
 		(aabb1.min.x <= aabb2.max.x && aabb1.max.x >= aabb2.min.x) &&
 		(aabb1.min.y <= aabb2.max.y && aabb1.max.y >= aabb2.min.y) && 
 		(aabb1.min.z <= aabb2.max.z && aabb1.max.z >= aabb2.min.z);
+}
+
+bool IsCollision(const AABB& aabb, const Sphere& sphere) {
+	float disSqu = LengthSquare(ClosestPoint(aabb, sphere) - sphere.center);
+	return disSqu <= sphere.radius * sphere.radius;
 }

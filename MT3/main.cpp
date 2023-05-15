@@ -28,13 +28,13 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	RenderingPipeline renderingPipeline{};
 	renderingPipeline.Initalize(static_cast<float>(kWindowWidth), static_cast<float>(kWindowHeight));
 
-	AABB aabb1{
+	AABB aabb{
 		.min{-0.5f, -0.5f, -0.5f},
 		.max{ 0.0f,  0.0f,  0.0f}
 	};
-	AABB aabb2{
-		.min{ 0.2f,  0.2f,  0.2f},
-		.max{ 1.0f,  1.0f,  1.0f}
+	Sphere sphere{
+		.center{},
+		.radius{1.0f}
 	};
 
 	uint32_t color = WHITE;
@@ -54,27 +54,20 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		ImGui::SetNextWindowPos({ (float)kWindowWidth - 330.0f, 0.0f }, ImGuiCond_Once);
 		ImGui::SetNextWindowSize({ 330.0f, 170.0f }, ImGuiCond_Once);
 		ImGui::Begin("Window");
-		ImGui::DragFloat3("AABB1 min", &aabb1.min.x, 0.01f);
-		ImGui::DragFloat3("AABB1 max", &aabb1.max.x, 0.01f);
-		ImGui::DragFloat3("AABB2 min", &aabb2.min.x, 0.01f);
-		ImGui::DragFloat3("AABB2 max", &aabb2.max.x, 0.01f);
+		ImGui::DragFloat3("AABB min", &aabb.min.x, 0.01f);
+		ImGui::DragFloat3("AABB max", &aabb.max.x, 0.01f);
+		ImGui::DragFloat3("Sphere center", &sphere.center.x, 0.01f);
+		ImGui::DragFloat("Sphere radius", &sphere.radius, 0.01f);
 		ImGui::End();
-		
-		aabb1.min.x = (std::min)(aabb1.min.x, aabb1.max.x);
-		aabb1.max.x = (std::max)(aabb1.min.x, aabb1.max.x);
-		aabb1.min.y = (std::min)(aabb1.min.y, aabb1.max.y);
-		aabb1.max.y = (std::max)(aabb1.min.y, aabb1.max.y);
-		aabb1.min.z = (std::min)(aabb1.min.z, aabb1.max.z);
-		aabb1.max.z = (std::max)(aabb1.min.z, aabb1.max.z);
 
-		aabb2.min.x = (std::min)(aabb2.min.x, aabb2.max.x);
-		aabb2.max.x = (std::max)(aabb2.min.x, aabb2.max.x);
-		aabb2.min.y = (std::min)(aabb2.min.y, aabb2.max.y);
-		aabb2.max.y = (std::max)(aabb2.min.y, aabb2.max.y);
-		aabb2.min.z = (std::min)(aabb2.min.z, aabb2.max.z);
-		aabb2.max.z = (std::max)(aabb2.min.z, aabb2.max.z);
+		aabb.min.x = (std::min)(aabb.min.x, aabb.max.x);
+		aabb.max.x = (std::max)(aabb.min.x, aabb.max.x);
+		aabb.min.y = (std::min)(aabb.min.y, aabb.max.y);
+		aabb.max.y = (std::max)(aabb.min.y, aabb.max.y);
+		aabb.min.z = (std::min)(aabb.min.z, aabb.max.z);
+		aabb.max.z = (std::max)(aabb.min.z, aabb.max.z);
 
-		color = IsCollision(aabb1, aabb2) ? RED : WHITE;
+		color = IsCollision(aabb, sphere) ? RED : WHITE;
 
 		///
 		/// ↑更新処理ここまで
@@ -86,8 +79,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 		renderingPipeline.DrawGrid(4);
 
-		renderingPipeline.DrawAABB(aabb1, color);
-		renderingPipeline.DrawAABB(aabb2, color);
+		renderingPipeline.DrawAABB(aabb, color);
+		renderingPipeline.DrawSphere(sphere, color);
 
 		renderingPipeline.DrawAxis();
 

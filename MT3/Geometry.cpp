@@ -32,6 +32,13 @@ Vector3 ClosestPoint(const Vector3& point, const Segment& segment) {
 	return segment.origin + proj;
 }
 
+Vector3 ClosestPoint(const AABB& aabb, const Sphere& sphere) {
+	return {
+		std::clamp(sphere.center.x, aabb.min.x, aabb.max.x),
+		std::clamp(sphere.center.y, aabb.min.y, aabb.max.y),
+		std::clamp(sphere.center.z, aabb.min.z, aabb.max.z), };
+}
+
 bool Intersection(const Plane& plane, const Line& line, Vector3& out_intersectionPoint) {
 	float DdotN = Dot(line.diff, plane.normal);
 	if (DdotN == 0.0f) {

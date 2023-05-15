@@ -43,6 +43,7 @@ Plane MakePlaneFromTriangle(const Triangle& triangle);
 Vector3 ClosestPoint(const Vector3& point, const Line& line);
 Vector3 ClosestPoint(const Vector3& point, const Ray& ray);
 Vector3 ClosestPoint(const Vector3& point, const Segment& segment);
+Vector3 ClosestPoint(const AABB& aabb, const Sphere& sphere);
 
 bool Intersection(const Plane& plane, const Line& line, Vector3& out_intersectionPoint);
 bool Intersection(const Plane& plane, const Ray& ray, Vector3& out_intersectionPoint);
