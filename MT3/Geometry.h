@@ -29,7 +29,12 @@ struct Plane {
 };
 // 三角形
 struct Triangle {
-	Vector3 vertices[3];
+	Vector3 vertices[3]; // 頂点
+};
+// AABB
+struct AABB {
+	Vector3 min; // 最小点
+	Vector3 max; // 最大点
 };
 
 Plane MakePlaneFromPointAndNormal(const Vector3& point, const Vector3 normal);

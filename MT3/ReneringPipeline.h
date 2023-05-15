@@ -30,6 +30,7 @@ public:
 	void ScreenDrawLine(const Vector3& v1, const Vector3& v2, uint32_t color);
 	void DrawLine(const Vector3& v1, const Vector3& v2, uint32_t color);
 	void DrawGrid(float width = 10.0f, uint32_t subdivision = 10);
+	void DrawAxis();
 
 	///
 	/// Draw Geometry
@@ -40,6 +41,8 @@ public:
 	void DrawSegment(const Segment& segment, uint32_t color);
 	void DrawPlane(const Plane& plane, uint32_t color, float size = 2.0f);
 	void DrawTriangle(const Triangle& triangle, uint32_t color);
+	void DrawAABB(const AABB& aabb, uint32_t color);
+
 
 
 private:

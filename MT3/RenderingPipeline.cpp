@@ -55,6 +55,29 @@ void RenderingPipeline::DrawGrid(float width, uint32_t subdivision) {
 	}
 }
 
+void RenderingPipeline::DrawAxis() {
+	Vector3 translate = Transform({ 0.0f,0.0f,-10.0f }, MakeRotateXYZMatrix(cameraRotate));
+	Matrix4x4 vpvMatrix = MakeIdentityMatrix();
+	vpvMatrix *= Inverse(MakeAffineMatrix({ 1.0f,1.0f,1.0f }, cameraRotate, translate));
+	vpvMatrix *= projectionMatrix;
+	vpvMatrix *= viewportMatrix;
+
+	Vector3 o = Transform({ 0.0f,0.0f,0.0f }, vpvMatrix);
+	Vector3 x = Transform({ 0.3f,0.0f,0.0f }, vpvMatrix);
+	Vector3 y = Transform({ 0.0f,0.3f,0.0f }, vpvMatrix);
+	Vector3 z = Transform({ 0.0f,0.0f,0.3f }, vpvMatrix);
+
+	Vector3 offset = { -590.0f, 310.0f, 0.0f };
+	o += offset;
+	x += offset;
+	y += offset;
+	z += offset;
+
+	ScreenDrawLine(o, x, RED);
+	ScreenDrawLine(o, y, GREEN);
+	ScreenDrawLine(o, z, BLUE);
+}
+
 void RenderingPipeline::DrawSphere(const Sphere& sphere, uint32_t color, uint32_t subdivision) {
 	assert(subdivision >= 3);
 
@@ -144,5 +167,29 @@ void RenderingPipeline::DrawTriangle(const Triangle& triangle, uint32_t color) {
 		static_cast<int>(vertices[0].x), static_cast<int>(vertices[0].y),
 		static_cast<int>(vertices[1].x), static_cast<int>(vertices[1].y),
 		static_cast<int>(vertices[2].x), static_cast<int>(vertices[2].y), color, kFillModeWireFrame);
+}
+
+void RenderingPipeline::DrawAABB(const AABB& aabb, uint32_t color) {
+	Vector3 vertices[] = {
+		aabb.min,
+		{aabb.min.x, aabb.max.y, aabb.min.z},
+		{aabb.max.x, aabb.max.y, aabb.min.z},
+		{aabb.max.x, aabb.min.y, aabb.min.z},
+
+		{aabb.min.x, aabb.min.y, aabb.max.z},
+		{aabb.min.x, aabb.max.y, aabb.max.z},
+		aabb.max,
+		{aabb.max.x, aabb.min.y, aabb.max.z},
+	};
+	for (auto& vertex : vertices) {
+		vertex = Apply(vertex);
+	}
+	uint32_t i{}, j{};
+	for (i = 0; i < 4; ++i) {
+		j = (i + 1) % 4;
+		ScreenDrawLine(vertices[i], vertices[j], color);
+		ScreenDrawLine(vertices[i], vertices[i + 4], color);
+		ScreenDrawLine(vertices[i + 4], vertices[j + 4], color);
+	}
 }
 
