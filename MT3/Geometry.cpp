@@ -41,9 +41,7 @@ Vector3 ClosestPoint(const AABB& aabb, const Sphere& sphere) {
 
 bool Intersection(const Plane& plane, const Line& line, Vector3& out_intersectionPoint) {
 	float DdotN = Dot(line.diff, plane.normal);
-	if (DdotN == 0.0f) {
-		return false;
-	}
+	if (DdotN == 0.0f) { return false; }
 	float t = (plane.distance - Dot(line.origin, plane.normal)) / DdotN;
 	out_intersectionPoint = line.origin + t * line.diff;
 	return true;
@@ -51,26 +49,18 @@ bool Intersection(const Plane& plane, const Line& line, Vector3& out_intersectio
 
 bool Intersection(const Plane& plane, const Ray& ray, Vector3& out_intersectionPoint) {
 	float DdotN = Dot(ray.diff, plane.normal);
-	if (DdotN == 0.0f) {
-		return false;
-	}
+	if (DdotN == 0.0f) { return false; }
 	float t = (plane.distance - Dot(ray.origin, plane.normal)) / DdotN;
-	if (0.0f > t) {
-		return false;
-	}
+	if (0.0f > t) { return false; }
 	out_intersectionPoint = ray.origin + t * ray.diff;
 	return true;
 }
 
 bool Intersection(const Plane& plane, const Segment& segment, Vector3& out_intersectionPoint) {
 	float DdotN = Dot(segment.diff, plane.normal);
-	if (DdotN == 0.0f) {
-		return false;
-	}
+	if (DdotN == 0.0f) { return false; }
 	float t = (plane.distance - Dot(segment.origin, plane.normal)) / DdotN;
-	if (0.0f > t || t > 1.0f) {
-		return false;
-	}
+	if (0.0f > t || t > 1.0f) { return false; }
 	out_intersectionPoint = segment.origin + t * segment.diff;
 	return true;
 }
@@ -81,15 +71,15 @@ bool Intersection(const Triangle& triangle, const Line& line, Vector3& out_inter
 	Plane plane = MakePlaneFromPointAndNormal(triangle.vertices[0], normal);
 	Vector3 point{};
 	// 平面と線の交点を求める
-	if (!Intersection(plane, line, point)) {
-		return false;
-	}
+	if (!Intersection(plane, line, point)) { return false; }
 	// 三角形の２つの頂点と交点から生成される三角形の法線を求める
 	Vector3 normal01 = CalcNormal(triangle.vertices[0], triangle.vertices[1], point);
 	Vector3 normal12 = CalcNormal(triangle.vertices[1], triangle.vertices[2], point);
 	Vector3 normal20 = CalcNormal(triangle.vertices[2], triangle.vertices[0], point);
 	// すべての法線が同じ方向を向いていたら衝突
-	if (!(Dot(normal01, normal) >= 0.0f && Dot(normal12, normal) >= 0.0f && Dot(normal20, normal) >= 0.0f)) {
+	if (!(Dot(normal01, normal) >= 0.0f && 
+		  Dot(normal12, normal) >= 0.0f && 
+		  Dot(normal20, normal) >= 0.0f)) {
 		return false;
 	}
 	out_intersectionPoint = point;
@@ -102,15 +92,15 @@ bool Intersection(const Triangle& triangle, const Ray& ray, Vector3& out_interse
 	Plane plane = MakePlaneFromPointAndNormal(triangle.vertices[0], normal);
 	Vector3 point{};
 	// 平面と線の交点を求める
-	if (!Intersection(plane, ray, point)) {
-		return false;
-	}
+	if (!Intersection(plane, ray, point)) { return false; }
 	// 三角形の２つの頂点と交点から生成される三角形の法線を求める
 	Vector3 normal01 = CalcNormal(triangle.vertices[0], triangle.vertices[1], point);
 	Vector3 normal12 = CalcNormal(triangle.vertices[1], triangle.vertices[2], point);
 	Vector3 normal20 = CalcNormal(triangle.vertices[2], triangle.vertices[0], point);
 	// すべての法線が同じ方向を向いていたら衝突
-	if (!(Dot(normal01, normal) >= 0.0f && Dot(normal12, normal) >= 0.0f && Dot(normal20, normal) >= 0.0f)) {
+	if (!(Dot(normal01, normal) >= 0.0f && 
+		  Dot(normal12, normal) >= 0.0f && 
+		  Dot(normal20, normal) >= 0.0f)) {
 		return false;
 	}
 	out_intersectionPoint = point;
@@ -123,15 +113,15 @@ bool Intersection(const Triangle& triangle, const Segment& segment, Vector3& out
 	Plane plane = MakePlaneFromPointAndNormal(triangle.vertices[0], normal);
 	Vector3 point{};
 	// 平面と線の交点を求める
-	if (!Intersection(plane, segment, point)) {
-		return false;
-	}
+	if (!Intersection(plane, segment, point)) { return false; }
 	// 三角形の２つの頂点と交点から生成される三角形の法線を求める
 	Vector3 normal01 = CalcNormal(triangle.vertices[0], triangle.vertices[1], point);
 	Vector3 normal12 = CalcNormal(triangle.vertices[1], triangle.vertices[2], point);
 	Vector3 normal20 = CalcNormal(triangle.vertices[2], triangle.vertices[0], point);
 	// すべての法線が同じ方向を向いていたら衝突
-	if (!(Dot(normal01, normal) >= 0.0f && Dot(normal12, normal) >= 0.0f && Dot(normal20, normal) >= 0.0f)) {
+	if (!(Dot(normal01, normal) >= 0.0f && 
+		  Dot(normal12, normal) >= 0.0f && 
+		  Dot(normal20, normal) >= 0.0f)) {
 		return false;
 	}
 	out_intersectionPoint = point;
