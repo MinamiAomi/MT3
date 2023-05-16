@@ -93,6 +93,8 @@ Vector3 Transform(const Vector3& v, const Matrix4x4& m);
 Vector3 TransformNormal(const Vector3& v, const Matrix4x4& m);
 inline Vector3 operator*(const Vector3& v, const Matrix4x4& m);
 
+Vector4 Multiply(const Vector4& v, const Matrix4x4& m);
+
 
 void VectorScreenPrintf(int x, int y, const Vector2& v, const char* label);
 void VectorScreenPrintf(int x, int y, const Vector3& v, const char* label);

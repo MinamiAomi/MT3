@@ -18,6 +18,10 @@ const uint32_t kWindowHeight = 720;
 /// <param name="renderingPipeline"></param>
 void MoveCamera(RenderingPipeline& renderingPipeline);
 
+void ImGuiRotateDeg(const std::string& label, Vector3& rotate);
+
+Matrix4x4 MakeViewMatrix(const Vector3& pos, const Vector3& rot);
+
 // Windowsアプリでのエントリーポイント(main関数)
 int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
@@ -28,17 +32,21 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	RenderingPipeline renderingPipeline{};
 	renderingPipeline.Initalize(static_cast<float>(kWindowWidth), static_cast<float>(kWindowHeight));
 
-	AABB aabb{
-		.min{-0.5f, -0.5f, -0.5f},
-		.max{ 0.5f,  0.5f,  0.5f}
-	};
-	Segment segment{
-		.origin{0.1f, 1.0f, -0.3f},
-		.diff{0.2f, -1.0f, 1.0f}
-	};
+	uint32_t width = 64;
+	uint32_t height = 36;
 
-	uint32_t color = WHITE;
+	Vector3 cameraPos{ 0.0f,0.0f,0.0f };
+	Vector3 cameraRot{};
 
+	float fovY = 45.0f;
+	float aspectRaito = static_cast<float>(width) / static_cast<float>(height);
+	float nearZ = 1.0f;
+	float farZ = 125.0f;
+
+	Matrix4x4 viewMat = MakeViewMatrix(cameraPos, cameraRot);
+	Matrix4x4 projMat = MakePerspectiveFovMatrix(Math::ToRad(fovY), aspectRaito, nearZ, farZ);
+	Matrix4x4 viewProjMat = viewMat * projMat;
+	Matrix4x4 viewProjMatInv = Inverse(viewProjMat);
 
 	// ウィンドウの×ボタンが押されるまでループ
 	while (Novice::ProcessMessage() == 0) {
@@ -52,21 +60,41 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		MoveCamera(renderingPipeline);
 
 		ImGui::SetNextWindowPos({ (float)kWindowWidth - 330.0f, 0.0f }, ImGuiCond_Once);
-		ImGui::SetNextWindowSize({ 330.0f, 170.0f }, ImGuiCond_Once);
-		ImGui::Begin("Window");
-		ImGui::DragFloat3("AABB min", &aabb.min.x, 0.01f);
-		ImGui::DragFloat3("AABB max", &aabb.max.x, 0.01f);
-		ImGui::DragFloat3("Segment origin", &segment.origin.x, 0.01f);
-		ImGui::DragFloat3("Segment diff", &segment.diff.x, 0.01f);
-		aabb.min.x = (std::min)(aabb.min.x, aabb.max.x);
-		aabb.max.x = (std::max)(aabb.min.x, aabb.max.x);
-		aabb.min.y = (std::min)(aabb.min.y, aabb.max.y);
-		aabb.max.y = (std::max)(aabb.min.y, aabb.max.y);
-		aabb.min.z = (std::min)(aabb.min.z, aabb.max.z);
-		aabb.max.z = (std::max)(aabb.min.z, aabb.max.z);
+		ImGui::SetNextWindowSize({ 330.0f, 300.0f }, ImGuiCond_Once);
+		ImGui::Begin("Ray");
+		ImGui::DragFloat3("Camera pos", &cameraPos.x, 0.01f);
+		ImGuiRotateDeg("Camera rot", cameraRot);
+		ImGui::SliderAngle("Fov Y", &fovY, 0.0f, 179.0f);
+		int w = static_cast<int>(width);
+		ImGui::DragInt("Width", &w, 1, 0);
+		width = static_cast<uint32_t>(w);
+		int h = static_cast<int>(height);
+		ImGui::DragInt("Height", &h, 1, 0);
+		height = static_cast<uint32_t>(h);
+		aspectRaito = static_cast<float>(width) / static_cast<float>(height);
+		ImGui::DragFloat("NearZ", &nearZ, 0.1f, 0.0f);
+		ImGui::DragFloat("FarZ", &farZ, 0.1f, 0.0f);
+		nearZ = (std::min)(nearZ, farZ);
+		farZ = (std::max)(nearZ, farZ);
+		ImGui::Text("Aspect raito : %.3f", aspectRaito);
+		ImGui::Text("Ray count : %d", width * height);
+		if (ImGui::Button("reset")) {
+			width = 64;
+			height = 36;
+			cameraPos = { 0.0f,0.0f,0.0f };
+			cameraRot = {};
+			fovY = 45.0f;
+			aspectRaito = static_cast<float>(width) / static_cast<float>(height);
+			nearZ = 1.0f;
+			farZ = 125.0f;
 
-		color = IsCollision(aabb, segment) ? RED : WHITE;
+		}
 		ImGui::End();
+
+		viewMat = MakeViewMatrix(cameraPos, cameraRot);
+		projMat = MakePerspectiveFovMatrix(fovY, aspectRaito, nearZ, farZ);
+		viewProjMat = viewMat * projMat;
+		viewProjMatInv = Inverse(viewProjMat);
 
 
 		///
@@ -77,10 +105,51 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		/// ↓描画処理ここから
 		///
 
-		renderingPipeline.DrawGrid(4);
+		renderingPipeline.DrawGrid(10);
 
-		renderingPipeline.DrawAABB(aabb, color);
-		renderingPipeline.DrawSegment(segment, WHITE);
+		{
+			Vector3 vertices[] = {
+				{  1.0f,  1.0f, 0.0f },
+				{ -1.0f,  1.0f, 0.0f },
+				{ -1.0f, -1.0f, 0.0f },
+				{  1.0f, -1.0f, 0.0f },
+			};
+			for (auto& vertex : vertices) {
+				vertex = Transform(vertex, viewProjMatInv);
+			}
+			renderingPipeline.DrawLine(vertices[0], vertices[1], RED);
+			renderingPipeline.DrawLine(vertices[1], vertices[2], RED);
+			renderingPipeline.DrawLine(vertices[2], vertices[3], RED);
+			renderingPipeline.DrawLine(vertices[3], vertices[0], RED);
+		}
+
+		{
+			Vector3 rayOrigin = cameraPos;
+			Vector3 lineStart = renderingPipeline.Apply(cameraPos);
+			Vector2 dimention{ static_cast<float>(width), static_cast<float>(height) };
+			for (uint32_t y = 0; y < height; y++) {
+				for (uint32_t x = 0; x < width; x++) {
+					Vector2 launchIndex{ static_cast<float>(x), static_cast<float>(y) };
+					Vector2 xy = launchIndex + Vector2(0.5f, 0.5f);
+					xy.x = xy.x / dimention.x * 2.0f - 1.0f;
+					xy.y = 1.0f - xy.y / dimention.y * 2.0f;
+					Vector4 hom = Multiply({ xy.x,xy.y,0.0f,1.0f }, viewProjMatInv);
+					Vector3 worldPos{ hom.x,hom.y,hom.z };
+					worldPos *= 1.0f / hom.w;	
+					Vector3 rayDirection = Normalize(worldPos - rayOrigin);
+
+					Vector3 lineEnd = renderingPipeline.Apply(rayDirection + rayOrigin);
+					renderingPipeline.ScreenDrawLine(lineStart, lineEnd, GREEN);
+				}
+			}
+		}
+		{
+			Ray ray{};
+			ray.origin = cameraPos;
+			ray.diff = TransformNormal(kVector3UnitZ * 5, MakeRotateXYZMatrix(cameraRot));
+			renderingPipeline.DrawRay(ray, BLACK);
+		}
+		renderingPipeline.DrawSphere({ cameraPos, 0.02f }, BLACK);
 
 		renderingPipeline.DrawAxis();
 
@@ -132,11 +201,22 @@ void MoveCamera(RenderingPipeline& renderingPipeline) {
 	ImGui::SetNextWindowSize({ 300.0f, 100.0f }, ImGuiCond_Once);
 	ImGui::Begin("Camera");
 	ImGui::DragFloat3("Camera position", &renderingPipeline.cameraPosition.x, 0.01f);
-	ImGui::DragFloat3("Camera rotate", &renderingPipeline.cameraRotate.x, 0.01f, 0.0f, Math::TwoPi);
+	ImGuiRotateDeg("Camera rotate", renderingPipeline.cameraRotate);
 	if (ImGui::Button("Camera reset")) {
 		renderingPipeline.cameraRotate = { Math::ToRad(15.0f), 0.0f, 0.0f };
 		Vector3 forward = GetZAxis(MakeRotateXYZMatrix(renderingPipeline.cameraRotate));
 		renderingPipeline.cameraPosition = -forward * 6.0f;
 	}
 	ImGui::End();
+}
+
+void ImGuiRotateDeg(const std::string& label, Vector3& rotate) {
+	float deg[3] = { Math::ToDeg(rotate.x), Math::ToDeg(rotate.y), Math::ToDeg(rotate.z) };
+	ImGui::DragFloat3(label.c_str(), deg, 1.0f, 0.0f, 360.0f);
+	rotate = { Math::ToRad(deg[0]), Math::ToRad(deg[1]), Math::ToRad(deg[2]) };
+}
+
+Matrix4x4 MakeViewMatrix(const Vector3& translate, const Vector3& rotate) {
+	Matrix4x4 cameraMat = MakeRotateXYZMatrix(rotate) * MakeTranslateMatrix(translate);
+	return Inverse(cameraMat);
 }
