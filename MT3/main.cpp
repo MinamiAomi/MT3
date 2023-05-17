@@ -32,8 +32,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	RenderingPipeline renderingPipeline{};
 	renderingPipeline.Initalize(static_cast<float>(kWindowWidth), static_cast<float>(kWindowHeight));
 
-	uint32_t width = 64;
-	uint32_t height = 36;
+	uint32_t width = kWindowWidth / 8;
+	uint32_t height = kWindowHeight / 8;
 
 	Vector3 cameraPos{ 0.0f,0.0f,0.0f };
 	Vector3 cameraRot{};
