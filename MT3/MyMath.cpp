@@ -186,35 +186,35 @@ Matrix4x4 Inverse(const Matrix4x4& m) {
 	return 1.0f / Determinant(m) * Adjugate(m);
 }
 
-Matrix4x4 MakeAffineMatrix(const Vector3& scale, const Vector3& rotate, const Vector3& trans) {
-	Matrix4x4 rot = MakeIdentityMatrix();
-	rot *= MakeRotateXMatrix(rotate.x);
-	rot *= MakeRotateYMatrix(rotate.y);
-	rot *= MakeRotateZMatrix(rotate.z);
-
-	Matrix4x4 mat = {};
-	mat.m[0][0] = scale.x * rot.m[0][0];
-	mat.m[0][1] = scale.x * rot.m[0][1];
-	mat.m[0][2] = scale.x * rot.m[0][2];
-	mat.m[0][3] = 0.0f;
-
-	mat.m[1][0] = scale.y * rot.m[1][0];
-	mat.m[1][1] = scale.y * rot.m[1][1];
-	mat.m[1][2] = scale.y * rot.m[1][2];
-	mat.m[1][3] = 0.0f;
-
-	mat.m[2][0] = scale.z * rot.m[2][0];
-	mat.m[2][1] = scale.z * rot.m[2][1];
-	mat.m[2][2] = scale.z * rot.m[2][2];
-	mat.m[2][3] = 0.0f;
-
-	mat.m[3][0] = trans.x;
-	mat.m[3][1] = trans.y;
-	mat.m[3][2] = trans.z;
-	mat.m[3][3] = 1.0f;
-
-	return mat;
-}
+//Matrix4x4 MakeAffineMatrix(const Vector3& scale, const Vector3& rotate, const Vector3& trans) {
+//	Matrix4x4 rot = MakeIdentityMatrix();
+//	rot *= MakeRotateXMatrix(rotate.x);
+//	rot *= MakeRotateYMatrix(rotate.y);
+//	rot *= MakeRotateZMatrix(rotate.z);
+//
+//	Matrix4x4 mat = {};
+//	mat.m[0][0] = scale.x * rot.m[0][0];
+//	mat.m[0][1] = scale.x * rot.m[0][1];
+//	mat.m[0][2] = scale.x * rot.m[0][2];
+//	mat.m[0][3] = 0.0f;
+//
+//	mat.m[1][0] = scale.y * rot.m[1][0];
+//	mat.m[1][1] = scale.y * rot.m[1][1];
+//	mat.m[1][2] = scale.y * rot.m[1][2];
+//	mat.m[1][3] = 0.0f;
+//
+//	mat.m[2][0] = scale.z * rot.m[2][0];
+//	mat.m[2][1] = scale.z * rot.m[2][1];
+//	mat.m[2][2] = scale.z * rot.m[2][2];
+//	mat.m[2][3] = 0.0f;
+//
+//	mat.m[3][0] = trans.x;
+//	mat.m[3][1] = trans.y;
+//	mat.m[3][2] = trans.z;
+//	mat.m[3][3] = 1.0f;
+//
+//	return mat;
+//}
 
 Matrix4x4 MakePerspectiveFovMatrix(float fovY, float aspect, float nearZ, float farZ) {
 	float cotFov = 1.0f / std::tan(fovY * 0.5f);
@@ -266,30 +266,4 @@ Vector3 TransformNormal(const Vector3& v, const Matrix4x4& m) {
 	return result;
 }
 
-void VectorScreenPrintf(int x, int y, const Vector2& v, const char* label) {
-	constexpr int kColumnWidth = 60;
-	Novice::ScreenPrintf(x, y, "%.02f", v.x);
-	Novice::ScreenPrintf(x + kColumnWidth, y, "%.02f", v.y);
-	Novice::ScreenPrintf(x + kColumnWidth * 2, y, "%s", label);
-}
-
-void VectorScreenPrintf(int x, int y, const Vector3& v, const char* label) {
-	constexpr int kCoulumnWidth = 60;
-	Novice::ScreenPrintf(x, y, "%.02f", v.x);
-	Novice::ScreenPrintf(x + kCoulumnWidth, y, "%.02f", v.y);
-	Novice::ScreenPrintf(x + kCoulumnWidth * 2, y, "%.02f", v.z);
-	Novice::ScreenPrintf(x + kCoulumnWidth * 3, y, "%s", label);
-}
-
-void MatrixScreenPrintf(int x, int y, const Matrix4x4& m, const char* label) {
-	constexpr int kRowHeight = 20;
-	constexpr int kColumnWidth = 60;
-	Novice::ScreenPrintf(x, y, "%s", label);
-	for (int row = 0; row < 4; ++row) {
-		for (int column = 0; column < 4; ++column) {
-			Novice::ScreenPrintf(x + column * kColumnWidth,
-				y + (row + 1) * kRowHeight, "%6.02f", m.m[row][column]);
-		}
-	}
-}
 

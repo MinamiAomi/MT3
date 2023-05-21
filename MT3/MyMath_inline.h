@@ -210,27 +210,27 @@ inline Matrix4x4 MakeScaleMatrix(const Vector3& scale) {
 		0.0f,		0.0f,		scale.z,	0.0f,
 		0.0f,		0.0f,		0.0f,		1.0f };
 }
-inline Matrix4x4 MakeRotateXMatrix(float rad) {
-	float s = std::sin(rad);
-	float c = std::cos(rad);
+inline Matrix4x4 MakeRotateXMatrix(float rotate) {
+	float s = std::sin(rotate);
+	float c = std::cos(rotate);
 	return {
 		1.0f,	0.0f,	0.0f,	0.0f,
 		0.0f,	c,		s,		0.0f,
 		0.0f,	-s,		c,		0.0f,
 		0.0f,	0.0f,	0.0f,	1.0f };
 }
-inline Matrix4x4 MakeRotateYMatrix(float rad) {
-	float s = std::sin(rad);
-	float c = std::cos(rad);
+inline Matrix4x4 MakeRotateYMatrix(float rotate) {
+	float s = std::sin(rotate);
+	float c = std::cos(rotate);
 	return {
 		c,		0.0f,	-s,		0.0f,
 		0.0f,	1.0f,	0.0f,	0.0f,
 		s,		0.0f,	c,		0.0f,
 		0.0f,	0.0f,	0.0f,	1.0f };
 }
-inline Matrix4x4 MakeRotateZMatrix(float rad) {
-	float s = std::sin(rad);
-	float c = std::cos(rad);
+inline Matrix4x4 MakeRotateZMatrix(float rotate) {
+	float s = std::sin(rotate);
+	float c = std::cos(rotate);
 	return {
 		c,		s,		0.0f,	0.0f,
 		-s,		c,		0.0f,	0.0f,
@@ -238,14 +238,46 @@ inline Matrix4x4 MakeRotateZMatrix(float rad) {
 		0.0f,	0.0f,	0.0f,	1.0f };
 }
 inline Matrix4x4 MakeRotateXYZMatrix(const Vector3& rotate) {
-	return MakeRotateXMatrix(rotate.x) * MakeRotateYMatrix(rotate.y) * MakeRotateZMatrix(rotate.z);
-}
-inline Matrix4x4 MakeTranslateMatrix(const Vector3& trans) {
+	Vector3 s = { std::sin(rotate.x), std::sin(rotate.y), std::sin(rotate.z) };
+	Vector3 c = { std::cos(rotate.x), std::cos(rotate.y), std::cos(rotate.z) };
 	return {
-		1.0f,		0.0f,		0.0f,		0.0f,
-		0.0f,		1.0f,		0.0f,		0.0f,
-		0.0f,		0.0f,		1.0f,		0.0f,
-		trans.x,	trans.y,	trans.z,	1.0f };
+		c.y * c.z,						c.y * s.z,						-s.y,		0.0f,
+		s.x * s.y * c.z - c.x * s.z,	s.x * s.y * s.z + c.x * c.z,	s.x * c.y,	0.0f,
+		c.x * s.y * c.z + s.x * s.z,	c.x * s.y * s.z - s.x * c.z,	c.x * c.y,	0.0f,
+		0.0f,	0.0f,	0.0f,	1.0f };
+}
+inline Matrix4x4 MakeTranslateMatrix(const Vector3& translate) {
+	return {
+		1.0f,			0.0f,			0.0f,			0.0f,
+		0.0f,			1.0f,			0.0f,			0.0f,
+		0.0f,			0.0f,			1.0f,			0.0f,
+		translate.x,	translate.y,	translate.z,	1.0f };
+}
+
+inline Matrix4x4 MakeAffineMatrix(const Vector3& scale, const Vector3& rotate, const Vector3& translate) {
+	Vector3 s = { std::sin(rotate.x), std::sin(rotate.y), std::sin(rotate.z) };
+	Vector3 c = { std::cos(rotate.x), std::cos(rotate.y), std::cos(rotate.z) };
+	return {
+			scale.x * (c.y * c.z),
+			scale.x * (c.y * s.z),
+			scale.x * (-s.y),
+			0.0f,
+
+			scale.y * (s.x * s.y * c.z - c.x * s.z),
+			scale.y * (s.x * s.y * s.z + c.x * c.z),
+			scale.y * (s.x * c.y),
+			0.0f,
+
+			scale.z * (c.x* s.y* c.z + s.x * s.z),	
+			scale.z * (c.x* s.y* s.z - s.x * c.z),	
+			scale.z * (c.x* c.y),	
+			0.0f,
+
+			translate.x,	
+			translate.y,	
+			translate.z,	
+			1.0f
+	};
 }
 
 inline Vector3 GetXAxis(const Matrix4x4& m) {

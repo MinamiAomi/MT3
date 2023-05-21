@@ -78,8 +78,8 @@ inline Matrix4x4 MakeRotateXMatrix(float rad);
 inline Matrix4x4 MakeRotateYMatrix(float rad);
 inline Matrix4x4 MakeRotateZMatrix(float rad);
 inline Matrix4x4 MakeRotateXYZMatrix(const Vector3& rotate);
-inline Matrix4x4 MakeTranslateMatrix(const Vector3& trans);
-Matrix4x4 MakeAffineMatrix(const Vector3& scale, const Vector3& rotate, const Vector3& trans);
+inline Matrix4x4 MakeTranslateMatrix(const Vector3& translate);
+inline Matrix4x4 MakeAffineMatrix(const Vector3& scale, const Vector3& rotate, const Vector3& translate);
 Matrix4x4 MakePerspectiveFovMatrix(float fovY, float aspect, float nearZ, float farZ);
 Matrix4x4 MakeOrthographicMatrix(float left, float top, float right, float bottom, float nearZ, float farZ);
 Matrix4x4 MakeViewportMatrix(float left, float top, float width, float height, float minDepth, float maxDepth);
@@ -93,7 +93,3 @@ Vector3 Transform(const Vector3& v, const Matrix4x4& m);
 Vector3 TransformNormal(const Vector3& v, const Matrix4x4& m);
 inline Vector3 operator*(const Vector3& v, const Matrix4x4& m);
 
-
-void VectorScreenPrintf(int x, int y, const Vector2& v, const char* label);
-void VectorScreenPrintf(int x, int y, const Vector3& v, const char* label);
-void MatrixScreenPrintf(int x, int y, const Matrix4x4& m, const char* label);

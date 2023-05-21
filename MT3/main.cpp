@@ -5,6 +5,7 @@
 #include "MyMath.h"
 #include "ReneringPipeline.h"
 #include "Collision.h"
+#include "PrintUtils.h"
 
 const char kWindowTitle[] = "LE2A_19_ミナミアオミ";
 const uint32_t kWindowWidth = 1280;
@@ -39,6 +40,10 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 	uint32_t color = WHITE;
 
+	Vector3 scale{ 6.0f,3.0f,11.0f };
+	Vector3 rotate{ Math::ToRad(45.0f), Math::ToRad(60.0f), Math::ToRad(15.0f) };
+	Vector3 translate{ 5.0f, -2.0f, 3.0f };
+	Matrix4x4 world = MakeAffineMatrix(scale, rotate, translate);
 
 	// ウィンドウの×ボタンが押されるまでループ
 	while (Novice::ProcessMessage() == 0) {
@@ -69,6 +74,14 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		ImGui::End();
 
 
+		ImGui::SetNextWindowPos({ (float)kWindowWidth - 330.0f, 0.0f }, ImGuiCond_Once);
+		ImGui::SetNextWindowSize({ 330.0f, 170.0f }, ImGuiCond_Once);
+		ImGui::Begin("Matrix");
+		ImGui::TextVector("Scale", scale);
+		ImGui::TextVector("Rotate", rotate);
+		ImGui::TextVector("Translate", translate);
+		ImGui::TextMatrix("World", world);
+		ImGui::End();
 		///
 		/// ↑更新処理ここまで
 		///
