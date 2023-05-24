@@ -30,12 +30,20 @@ void MatrixScreenPrintf(int x, int y, const Matrix4x4& m, const char* label) {
 }
 
 namespace ImGui {
-	void TextVector(const char* label, const Vector3& v) {
+	void TextVector3(const char* label, const Vector3& v) {
 		std::string str(label);
 		str += "\n";
 		str += "%0.3f, %0.3f, %0.3f\n";
 		ImGui::Text(str.c_str(),
 			v.x, v.y, v.z);
+	}
+
+	void TextVector4(const char* label, const Vector4& v) {
+		std::string str(label);
+		str += "\n";
+		str += "%0.3f, %0.3f, %0.3f, %0.3f\n";
+		ImGui::Text(str.c_str(),
+			v.x, v.y, v.z, v.w);
 	}
 
 	void TextMatrix(const char* label, const Matrix4x4& m) {
