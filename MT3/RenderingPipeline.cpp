@@ -55,6 +55,30 @@ void RenderingPipeline::DrawGrid(float width, uint32_t subdivision) {
 	}
 }
 
+void RenderingPipeline::DrawBox(const Matrix4x4& world, uint32_t color) {
+	Vector3 vertices[] = {
+		{ -0.5f, -0.5f,  0.5f },
+		{ -0.5f,  0.5f,  0.5f },
+		{  0.5f,  0.5f,  0.5f },
+		{  0.5f, -0.5f,  0.5f },
+
+		{ -0.5f, -0.5f, -0.5f },
+		{ -0.5f,  0.5f, -0.5f },
+		{  0.5f,  0.5f, -0.5f },
+		{  0.5f, -0.5f, -0.5f }
+	};
+	for (auto& vertex : vertices) {
+		vertex = vertex * world;
+		vertex = Apply(vertex);
+	}
+	for (uint32_t i = 0, j = 0; i < 4; ++i) {
+		j = (i + 1) % 4;
+		ScreenDrawLine(vertices[i], vertices[j], color);
+		ScreenDrawLine(vertices[i], vertices[i + 4], color);
+		ScreenDrawLine(vertices[i + 4], vertices[j + 4], color);
+	}
+}
+
 void RenderingPipeline::DrawAxis() {
 	Vector3 translate = Transform({ 0.0f,0.0f,-10.0f }, MakeRotateXYZMatrix(cameraRotate));
 	Matrix4x4 vpvMatrix = MakeIdentityMatrix();

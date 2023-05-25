@@ -30,6 +30,7 @@ public:
 	void ScreenDrawLine(const Vector3& v1, const Vector3& v2, uint32_t color);
 	void DrawLine(const Vector3& v1, const Vector3& v2, uint32_t color);
 	void DrawGrid(float width = 10.0f, uint32_t subdivision = 10);
+	void DrawBox(const Matrix4x4& world, uint32_t color);
 	void DrawAxis();
 
 	///

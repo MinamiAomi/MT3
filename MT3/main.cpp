@@ -20,8 +20,12 @@ const uint32_t kWindowHeight = 720;
 void MoveCamera(RenderingPipeline& renderingPipeline);
 
 Matrix4x4 MakeRotateMatrixFromQuaternion(const Vector4& q);
+Vector4 MakeQuaternionFromAngleAxis(float angle, const Vector3& axis);
+Vector4 MakeQuaternionFromLookRotate(const Vector3& direction, const Vector3& up);
+Matrix4x4 MakeLookAtMatrix(const Vector3& direction, const Vector3& up);
 Vector4 MakeQuaternionFromEuler(const Vector3& euler);
 Vector4 MakeQuaternionFromMatrix(const Matrix4x4& m);
+Vector4 MakeQuaternionFromOrthonormal(const Vector3& x, const Vector3& y, const Vector3& z);
 float Dot(const Vector4& v1, const Vector4& v2) {
 	return v1.x * v2.x + v1.y * v2.y + v1.z * v2.z + v1.w * v2.w;
 }
@@ -32,28 +36,20 @@ Vector4 operator*(float s, const Vector4& v) {
 	return { v.x * s, v.y * s, v.z * s, v.w * s };
 }
 Vector4 Slerp(float t, const Vector4& start, const Vector4& end) {
-//	Vector4 s = start;
-//	float dot_val = Dot(start, end);
-//	// q1, q2が反対向きの場合
-//	if (dot_val < 0) {
-//		s.w = -s.w;
-//		s.x = -s.x;
-//		s.y = -s.y;
-//		s.z = -s.z;
-//		dot_val = -dot_val;
-//	}
-//	// 球面線形補間の計算
-//	float theta = std::acos(dot_val);
-//	return (std::sin((1 - t) * theta) * s + std::sin(t * theta) * end) * (1.0f / std::sin(theta));
-
-	float dot = Dot(start, end);
-	float theta = std::acos(dot);
+	float theta = std::acos(Dot(start, end));
+	if (theta < 0) {
+		theta *= -1;
+	}
 	float sin = std::sin(theta);
 	float sinT = std::sin(t * theta);
 	float sinInvT = std::sin((1.0f - t) * theta);
-	Vector4 a = (sinInvT / sin) * start;
-	Vector4 b = (sinT / sin) * end;
-	return a + b;
+	return (1.0f / sin) * (sinInvT * start + sinT * end);
+}
+inline float GetAngle(const Vector4& q) {
+	return std::acos(q.w) * 2.0f;
+}
+inline Vector3 GetAxis(const Vector4& q) {
+	return Vector3{ q.x,q.y,q.z } *(1.0f / std::sin(std::acos(q.w)));
 }
 
 // Windowsアプリでのエントリーポイント(main関数)
@@ -69,7 +65,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 
 	Vector3 target{};
-	Vector3 position{};
+	Vector3 position{ 0.0f,0.0f, -1.0f };
+	Vector3 position2{ 0.0f,0.0f, -1.0f };
+	Vector3 up{ 0,1,0 };
 
 	// ウィンドウの×ボタンが押されるまでループ
 	while (Novice::ProcessMessage() == 0) {
@@ -83,11 +81,13 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		MoveCamera(renderingPipeline);
 
 		ImGui::SetNextWindowPos({ (float)kWindowWidth - 330.0f, 0.0f }, ImGuiCond_Once);
-		ImGui::SetNextWindowSize({ 330.0f, 170.0f }, ImGuiCond_Once);
+		ImGui::SetNextWindowSize({ 330.0f, 500.0f }, ImGuiCond_Once);
 		ImGui::Begin("Window");
 
 		ImGui::DragFloat3("Target", &target.x, 0.01f);
 		ImGui::DragFloat3("Position", &position.x, 0.01f);
+		ImGui::DragFloat3("Position2", &position2.x, 0.01f);
+		ImGui::InputFloat3("Up", &up.x);
 
 
 		ImGui::End();
@@ -106,7 +106,47 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 		renderingPipeline.DrawSphere({ target,0.05f }, WHITE);
 		renderingPipeline.DrawSphere({ position,0.05f }, BLACK);
-		renderingPipeline.DrawLine(position, target, 0x666666FF);
+		renderingPipeline.DrawLine(position, position + up, 0x666666FF);
+		//	renderingPipeline.DrawLine(position, target, 0x666666FF);
+		{
+			Vector3 axis{};
+			float angle{};
+			Vector4 rot = MakeQuaternionFromLookRotate(target - position, up);
+			axis = GetAxis(rot);
+			angle = GetAngle(rot);
+			Matrix4x4 mat = MakeRotateMatrixFromQuaternion(rot);
+			Matrix4x4 world = MakeScaleMatrix({ 0.3f,0.1f,0.5f }) * mat * MakeTranslateMatrix(position);
+			renderingPipeline.DrawBox(world, RED);
+
+			ImGui::Begin("Window");
+
+			ImGui::Text("Angle\n %0.3f", angle);
+			ImGui::TextVector3("Axis", axis);
+			ImGui::TextVector4("Quaternion", rot);
+			ImGui::TextMatrix("Matrix1", mat);
+			ImGui::End();
+		}
+
+		{
+			Vector3 axis{};
+			float angle{};
+			Matrix4x4 mat = MakeLookAtMatrix(target - position2, up);
+			Vector4 rot = MakeQuaternionFromMatrix(mat);
+			Matrix4x4 world2 = MakeScaleMatrix({ 0.3f,0.1f,0.5f }) * mat * MakeTranslateMatrix(position2);
+			renderingPipeline.DrawBox(world2, 0x6666FF66);
+
+			axis = GetAxis(rot);
+			angle = GetAngle(rot);
+			renderingPipeline.DrawLine({ position2, axis }, WHITE);
+
+			ImGui::Begin("Window");
+			ImGui::Text("-------------------\n");
+			ImGui::TextMatrix("Matrix2", mat);
+			ImGui::TextVector4("Quaternion2", rot);
+			ImGui::Text("Angle\n %0.3f", angle);
+			ImGui::TextVector3("Axis", axis);
+			ImGui::End();
+		}
 
 		renderingPipeline.DrawAxis();
 
@@ -180,6 +220,23 @@ Matrix4x4 MakeRotateMatrixFromQuaternion(const Vector4& q) {
 		0.0f,				0.0f,				0.0f,				1.0f };
 }
 
+Vector4 MakeQuaternionFromAngleAxis(float angle, const Vector3& axis) {
+	float sin2 = std::sin(angle * 0.5f);
+	Vector4 result{};
+	result.x = axis.x * sin2;
+	result.y = axis.y * sin2;
+	result.z = axis.z * sin2;
+	result.w = std::cos(angle * 0.5f);
+	return result;
+}
+
+Vector4 MakeQuaternionFromLookRotate(const Vector3& direction, const Vector3& up) {
+	Vector3 z = Normalize(direction);
+	Vector3 x = Normalize(Cross(up, z));
+	Vector3 y = Cross(z, x);
+	return MakeQuaternionFromOrthonormal(x, y, z);
+}
+
 Vector4 MakeQuaternionFromEuler(const Vector3& euler) {
 	// ピッチ ヨー ロールの順
 	Vector3 s = Vector3(std::sin(euler.x * 0.5f), std::sin(euler.y * 0.5f), std::sin(euler.z * 0.5f));
@@ -193,49 +250,62 @@ Vector4 MakeQuaternionFromEuler(const Vector3& euler) {
 }
 
 Vector4 MakeQuaternionFromMatrix(const Matrix4x4& m) {
-	float elem[4] = {
-		 m.m[0][0] - m.m[1][1] - m.m[2][2] + 1.0f,
-		-m.m[0][0] + m.m[1][1] - m.m[2][2] + 1.0f,
-		-m.m[0][0] - m.m[1][1] + m.m[2][2] + 1.0f,
-		 m.m[0][0] + m.m[1][1] + m.m[2][2] + 1.0f,
-	};
+	Vector3 x{ m.m[0][0],m.m[0][1],m.m[0][2] };
+	Vector3 y{ m.m[1][0],m.m[1][1],m.m[1][2] };
+	Vector3 z{ m.m[2][0],m.m[2][1],m.m[2][2] };
+	return MakeQuaternionFromOrthonormal(x, y, z);
+}
 
-	uint32_t biggestIndex = 0;
-	for (uint32_t i = 1; i < 4; ++i) {
-		if (elem[i] > elem[biggestIndex]) {
-			biggestIndex = i;
-		}
+Matrix4x4 MakeLookAtMatrix(const Vector3& direction, const Vector3& up) {
+	Vector3 z = Normalize(direction);
+	Vector3 x = Normalize(Cross(up, z));
+	Vector3 y = Cross(z, x);
+	return {
+		x.x, x.y, x.z, 0.0f,
+		y.x, y.y, y.z, 0.0f,
+		z.x, z.y, z.z, 0.0f,
+		0.0f, 0.0f, 0.0f, 1.0f };
+}
+
+Vector4 MakeQuaternionFromOrthonormal(const Vector3& x, const Vector3& y, const Vector3& z) {
+	float trace = x.x + y.y + z.z;
+
+	if (trace > 0.0f) {
+		float s = std::sqrt(trace + 1.0f) * 0.5f;
+		Vector4 result{};
+		result.w = s;
+		s = 0.25f / s;
+		result.x = (y.z - z.y) * s;
+		result.y = (z.x - x.z) * s;
+		result.z = (x.y - y.x) * s;
+		return result;
 	}
-	if (elem[biggestIndex] < 0.0f) {
-		return {};
+	else if (x.x > y.y && x.x > z.z) {
+		float s = std::sqrt(1.0f + x.x - y.y - z.z) * 0.5f;
+		Vector4 result{};
+		result.x = s;
+		s = 0.25f / s;
+		result.y = (x.y + y.x) * s;
+		result.z = (z.x + x.z) * s;
+		result.w = (y.z - z.y) * s;
+		return result;
+	}
+	else if (y.y > z.z) {
+		float s = std::sqrt(1.0f - x.x + y.y - z.z) * 0.5f;
+		Vector4 result{};
+		result.y = s;
+		s = 0.25f / s;
+		result.x = (x.y + y.x) * s;
+		result.z = (y.z + z.y) * s;
+		result.w = (z.x - x.z) * s;
+		return result;
 	}
 	Vector4 result{};
-	float v = std::sqrt(elem[biggestIndex]) * 0.5f;
-	(&result.x)[biggestIndex] = v;
-	float mult = 0.25f / v;
-
-	switch (biggestIndex)
-	{
-	case 0: // x
-		result.y = (m.m[0][1] + m.m[1][0]) * mult;
-		result.z = (m.m[2][0] + m.m[0][2]) * mult;
-		result.w = (m.m[1][2] - m.m[2][1]) * mult;
-		break;
-	case 1: // y
-		result.x = (m.m[0][1] + m.m[1][0]) * mult;
-		result.z = (m.m[1][2] + m.m[2][1]) * mult;
-		result.w = (m.m[2][0] - m.m[0][2]) * mult;
-		break;
-	case 2: // z
-		result.x = (m.m[2][0] + m.m[0][2]) * mult;
-		result.y = (m.m[1][2] + m.m[2][1]) * mult;
-		result.w = (m.m[0][1] - m.m[1][0]) * mult;
-		break;
-	case 3: // w
-		result.x = (m.m[1][2] - m.m[2][1]) * mult;
-		result.y = (m.m[2][0] - m.m[0][2]) * mult;
-		result.z = (m.m[0][1] - m.m[1][0]) * mult;
-		break;
-	}
+	float s = std::sqrt(1.0f - x.x - y.y + z.z) * 0.5f;
+	result.z = s;
+	s = 0.25f / s;
+	result.x = (z.x + x.z) * s;
+	result.y = (y.z + z.y) * s;
+	result.w = (x.y - y.x) * s;
 	return result;
 }
