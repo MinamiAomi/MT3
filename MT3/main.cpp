@@ -40,10 +40,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		.size{0.5f,0.5f,0.5f}
 	};
 
-	Sphere sphere{
-		.center{},
-		.radius{0.5f}
-	};
+	Segment segment{ .origin{Vector3Zero}, .diff{Vector3One} };
 
 	uint32_t color = WHITE;
 	// ウィンドウの×ボタンが押されるまでループ
@@ -68,13 +65,13 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			GetOrientations(MakeRotateXYZMatrix(rotate), obb.orientations);
 			ImGui::DragFloat3("OBB size", &obb.size.x, 0.01f, 0.01f, 1000.0f);
 
-			ImGui::DragFloat3("Sphere center", &sphere.center.x, 0.01f);
-			ImGui::DragFloat("Sphere radius", &sphere.radius, 0.01f, 0.01f, 1000.0f);
+			ImGui::DragFloat3("Segment origin", &segment.origin.x, 0.01f);
+			ImGui::DragFloat3("Segment diff", &segment.diff.x, 0.01f);
+
 			ImGui::End();
 		}
 
-		color = IsCollision(obb, sphere) ? RED : WHITE;
-		Vector3 point = ClosestPoint(obb, sphere);
+		color = IsCollision(obb, segment) ? RED : WHITE;
 
 
 		///
@@ -87,9 +84,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 		renderingPipeline.DrawGrid(4);
 
-		renderingPipeline.DrawSphere(sphere, WHITE);
+		renderingPipeline.DrawSegment(segment, WHITE);
 		renderingPipeline.DrawOBB(obb, color);
-		renderingPipeline.DrawSphere({point,0.05f}, BLACK);
 
 		renderingPipeline.DrawAxis();
 
