@@ -1,5 +1,5 @@
-#include "MyMath.h"
 #pragma once
+#include "MyMath.h"
 
 inline Vector2 operator+(const Vector2& v) {
 	return { +v.x,+v.y };
@@ -196,6 +196,13 @@ inline Matrix4x4 Transpose(const Matrix4x4& m) {
 		m.m[0][2], m.m[1][2], m.m[2][2], m.m[3][2],
 		m.m[0][3], m.m[1][3], m.m[2][3], m.m[3][3] };
 }
+inline Matrix4x4 MakeInverseMatrix(const Vector3& rotate, const Vector3& translate) {
+	return MakeInverseMatrix(MakeRotateXYZMatrix(rotate), translate);
+}
+inline Matrix4x4 MakeInverseMatrix(const Matrix4x4& rotate, const Vector3& translate) {
+	Matrix4x4 RT = Transpose(rotate);
+	return SetTranslate(RT, -translate * RT);
+}
 inline Matrix4x4 MakeIdentityMatrix() {
 	return {
 		1.0f, 0.0f, 0.0f, 0.0f,
@@ -268,14 +275,14 @@ inline Matrix4x4 MakeAffineMatrix(const Vector3& scale, const Vector3& rotate, c
 			scale.y * (s.x * c.y),
 			0.0f,
 
-			scale.z * (c.x* s.y* c.z + s.x * s.z),	
-			scale.z * (c.x* s.y* s.z - s.x * c.z),	
-			scale.z * (c.x* c.y),	
+			scale.z * (c.x * s.y * c.z + s.x * s.z),
+			scale.z * (c.x * s.y * s.z - s.x * c.z),
+			scale.z * (c.x * c.y),
 			0.0f,
 
-			translate.x,	
-			translate.y,	
-			translate.z,	
+			translate.x,
+			translate.y,
+			translate.z,
 			1.0f
 	};
 }
@@ -296,6 +303,35 @@ inline Vector3 GetTranslate(const Matrix4x4& m) {
 	return { m.m[3][0],m.m[3][1],m.m[3][2] };
 }
 
+inline Matrix4x4& SetXAxis(Matrix4x4& m, const Vector3& v) {
+	m.m[0][0] = v.x, m.m[0][1] = v.y, m.m[0][2] = v.z;
+	return m;
+}
+inline Matrix4x4& SetYAxis(Matrix4x4& m, const Vector3& v) {
+	m.m[1][0] = v.x, m.m[1][1] = v.y, m.m[1][2] = v.z;
+	return m;
+}
+inline Matrix4x4& SetZAxis(Matrix4x4& m, const Vector3& v) {
+	m.m[2][0] = v.x, m.m[2][1] = v.y, m.m[2][2] = v.z;
+	return m;
+}
+inline Matrix4x4& SetTranslate(Matrix4x4& m, const Vector3& v) {
+	m.m[3][0] = v.x, m.m[3][1] = v.y, m.m[3][2] = v.z;
+	return m;
+}
+
+inline void GetOrientations(const Matrix4x4& m, Vector3 orientations[3]) {
+	orientations[0] = GetXAxis(m);
+	orientations[1] = GetYAxis(m);
+	orientations[2] = GetZAxis(m);
+}
+inline Matrix4x4 MakeRotateMatrixFromOrientations(const Vector3 orientations[3]) {
+	return {
+		orientations[0].x,orientations[0].y,orientations[0].z,0.0f,
+		orientations[1].x,orientations[1].y,orientations[1].z,0.0f,
+		orientations[2].x,orientations[2].y,orientations[2].z,0.0f,
+		0.0f,0.0f,0.0f,1.0f };
+}
 
 inline Vector3 operator*(const Vector3& v, const Matrix4x4& m) {
 	return {

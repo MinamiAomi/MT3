@@ -43,6 +43,7 @@ public:
 	void DrawPlane(const Plane& plane, uint32_t color, float size = 2.0f);
 	void DrawTriangle(const Triangle& triangle, uint32_t color);
 	void DrawAABB(const AABB& aabb, uint32_t color);
+	void DrawOBB(const OBB& obb, uint32_t color);
 
 
 

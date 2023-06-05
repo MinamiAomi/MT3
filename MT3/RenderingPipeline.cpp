@@ -5,7 +5,7 @@
 
 void RenderingPipeline::Initalize(float windowWidth, float windowHeight) {
 	// ビュー行列をセット
-	cameraRotate = { Math::ToRad(15.0f), 0.0f, 0.0f };
+	cameraRotate = { 15.0f * Math::ToRadian, 0.0f, 0.0f };
 	Vector3 forward = GetZAxis(MakeRotateXYZMatrix(cameraRotate));
 	cameraPosition = -forward * 6.0f;
 	// 射影行列をセット
@@ -206,6 +206,33 @@ void RenderingPipeline::DrawAABB(const AABB& aabb, uint32_t color) {
 		{aabb.max.x, aabb.min.y, aabb.max.z},
 	};
 	for (auto& vertex : vertices) {
+		vertex = Apply(vertex);
+	}
+	uint32_t i{}, j{};
+	for (i = 0; i < 4; ++i) {
+		j = (i + 1) % 4;
+		ScreenDrawLine(vertices[i], vertices[j], color);
+		ScreenDrawLine(vertices[i], vertices[i + 4], color);
+		ScreenDrawLine(vertices[i + 4], vertices[j + 4], color);
+	}
+}
+
+void RenderingPipeline::DrawOBB(const OBB& obb, uint32_t color) {
+	Vector3 vertices[] = {
+		-obb.size,
+		{-obb.size.x, obb.size.y, -obb.size.z},
+		{obb.size.x, obb.size.y, -obb.size.z},
+		{obb.size.x, -obb.size.y, -obb.size.z},
+
+		{-obb.size.x, -obb.size.y, obb.size.z},
+		{-obb.size.x, obb.size.y, obb.size.z},
+		obb.size,
+		{obb.size.x, -obb.size.y, obb.size.z},
+	};
+	Matrix4x4 worldMatrix = MakeRotateMatrixFromOrientations(obb.orientations);
+	SetTranslate(worldMatrix, obb.center);
+	for (auto& vertex : vertices) {
+		vertex = vertex * worldMatrix;
 		vertex = Apply(vertex);
 	}
 	uint32_t i{}, j{};

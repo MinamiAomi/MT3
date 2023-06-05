@@ -36,6 +36,11 @@ struct AABB {
 	Vector3 min; // 最小点
 	Vector3 max; // 最大点
 };
+struct OBB {
+	Vector3 center;				// 中心
+	Vector3 orientations[3];	// 姿勢
+	Vector3 size;				// 大きさ
+};
 
 Plane MakePlaneFromPointAndNormal(const Vector3& point, const Vector3 normal);
 Plane MakePlaneFromTriangle(const Triangle& triangle);
@@ -44,6 +49,7 @@ Vector3 ClosestPoint(const Vector3& point, const Line& line);
 Vector3 ClosestPoint(const Vector3& point, const Ray& ray);
 Vector3 ClosestPoint(const Vector3& point, const Segment& segment);
 Vector3 ClosestPoint(const AABB& aabb, const Sphere& sphere);
+Vector3 ClosestPoint(const OBB& obb, const Sphere& sphere);
 
 bool Intersection(const Plane& plane, const Line& line, Vector3& out_intersectionPoint);
 bool Intersection(const Plane& plane, const Ray& ray, Vector3& out_intersectionPoint);

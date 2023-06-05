@@ -145,3 +145,11 @@ bool IsCollision(const AABB& aabb, const Segment& segment) {
 
 	return true;
 }
+
+bool IsCollision(const OBB& obb, const Sphere& sphere) {
+	Matrix4x4 obbWorldInverse = MakeInverseMatrix(MakeRotateMatrixFromOrientations(obb.orientations), obb.center);
+	Vector3 centerInOBBLocalSpace = sphere.center * obbWorldInverse;
+	AABB aabbOBBLocal{ .min = -obb.size, .max = obb.size };
+	Sphere sphereObbLocal{ centerInOBBLocalSpace, sphere.radius };
+	return IsCollision(aabbOBBLocal, sphereObbLocal);
+}
