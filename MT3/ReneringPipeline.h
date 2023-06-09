@@ -11,8 +11,9 @@ enum class CullMode {
 
 class RenderingPipeline {
 public:
-	Vector3 cameraPosition;
-	Vector3 cameraRotate;
+	Vector3 cameraPosition{};
+	Vector3 cameraRotate{};
+	float targetDistance{};
 
 	Matrix4x4 viewMatrix;
 	Matrix4x4 projectionMatrix;

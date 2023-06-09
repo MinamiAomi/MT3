@@ -62,6 +62,11 @@ inline Vector3 Normalize(const Vector3& v);
 inline Vector3 Lerp(const Vector3& start, const Vector3& end, float t);
 inline Vector3 Project(const Vector3& v1, const Vector3& v2);
 
+namespace Math {
+	inline Vector3 ToDeg(const Vector3& rad) { return { ToDeg(rad.x),ToDeg(rad.y),ToDeg(rad.z) }; }
+	inline Vector3 ToRad(const Vector3& deg) { return { ToRad(deg.x),ToRad(deg.y),ToRad(deg.z) }; }
+}
+
 inline Matrix4x4 operator+(const Matrix4x4& m1, const Matrix4x4& m2);
 inline Matrix4x4 operator-(const Matrix4x4& m1, const Matrix4x4& m2);
 inline Matrix4x4 operator*(const Matrix4x4& m1, const Matrix4x4& m2);

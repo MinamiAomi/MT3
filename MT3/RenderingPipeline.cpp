@@ -7,7 +7,8 @@ void RenderingPipeline::Initalize(float windowWidth, float windowHeight) {
 	// ビュー行列をセット
 	cameraRotate = { Math::ToRad(15.0f), 0.0f, 0.0f };
 	Vector3 forward = GetZAxis(MakeRotateXYZMatrix(cameraRotate));
-	cameraPosition = -forward * 6.0f;
+	targetDistance = 6.0f;
+	cameraPosition = -forward * targetDistance;
 	// 射影行列をセット
 	projectionMatrix = MakePerspectiveFovMatrix(0.45f, windowWidth / windowHeight, 0.1f, 100.0f);
 	// ビューポート行列をセット
