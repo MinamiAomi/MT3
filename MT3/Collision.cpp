@@ -146,3 +146,45 @@ bool IsCollision(const AABB& aabb, const Segment& segment) {
 
 	return true;
 }
+
+bool IsCollision(const OBB& obb, const Sphere& sphere) {
+	// 球の中心座標をOBBのローカル座標系にしAABBと当たり判定を行う
+	Matrix4x4 obbWorldInverse = MakeInverseMatrix(MakeRotateMatrixFromOrientations(obb.orientations), obb.center);
+	Vector3 centerInOBBLocalSpace = sphere.center * obbWorldInverse;
+	AABB aabbOBBLocal{ .min = -obb.size, .max = obb.size };
+	Sphere sphereObbLocal{ centerInOBBLocalSpace, sphere.radius };
+	return IsCollision(aabbOBBLocal, sphereObbLocal);
+}
+
+bool IsCollision(const OBB& obb, const Line& line) {
+	// OBBのローカル座標系にしAABBと当たり判定を行う
+	Matrix4x4 obbWorldInverse = MakeInverseMatrix(MakeRotateMatrixFromOrientations(obb.orientations), obb.center);
+	Vector3 localOrigin = line.origin * obbWorldInverse;
+	Vector3 localEnd = (line.origin + line.diff) * obbWorldInverse;
+
+	AABB aabbOBBLocal{ .min = -obb.size, .max = obb.size };
+	Line lineObbLocal{ .origin = localOrigin, .diff = localEnd - localOrigin };
+	return IsCollision(aabbOBBLocal, lineObbLocal);
+}
+
+bool IsCollision(const OBB& obb, const Ray& ray) {
+	// OBBのローカル座標系にしAABBと当たり判定を行う
+	Matrix4x4 obbWorldInverse = MakeInverseMatrix(MakeRotateMatrixFromOrientations(obb.orientations), obb.center);
+	Vector3 localOrigin = ray.origin * obbWorldInverse;
+	Vector3 localEnd = (ray.origin + ray.diff) * obbWorldInverse;
+
+	AABB aabbOBBLocal{ .min = -obb.size, .max = obb.size };
+	Ray rayObbLocal{ .origin = localOrigin, .diff = localEnd - localOrigin };
+	return IsCollision(aabbOBBLocal, rayObbLocal);
+}
+
+bool IsCollision(const OBB& obb, const Segment& segment) {
+	// OBBのローカル座標系にしAABBと当たり判定を行う
+	Matrix4x4 obbWorldInverse = MakeInverseMatrix(MakeRotateMatrixFromOrientations(obb.orientations), obb.center);
+	Vector3 localOrigin = segment.origin * obbWorldInverse;
+	Vector3 localEnd = (segment.origin + segment.diff) * obbWorldInverse;
+
+	AABB aabbOBBLocal{ .min = -obb.size, .max = obb.size };
+	Segment segmentObbLocal{ .origin = localOrigin, .diff = localEnd - localOrigin };
+	return IsCollision(aabbOBBLocal, segmentObbLocal);
+}

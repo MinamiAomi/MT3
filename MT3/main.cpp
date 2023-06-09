@@ -42,17 +42,19 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		///
 
 		MoveCamera(renderingPipeline);
-
-		ImGui::SetNextWindowPos({ (float)kWindowWidth - 330.0f, 0.0f }, ImGuiCond_Once);
-		ImGui::SetNextWindowSize({ 330.0f, 500.0f }, ImGuiCond_Once);
-		ImGui::Begin("Window");
+		{
+			ImGui::SetNextWindowPos({ (float)kWindowWidth - 330.0f, 0.0f }, ImGuiCond_Once);
+			ImGui::SetNextWindowSize({ 330.0f, 500.0f }, ImGuiCond_Once);
+			ImGui::Begin("Window");
 
 		ImGui::DragFloat("Distance", &plane.distance, 0.01f);
 		ImGui::DragFloat3("Normal", &plane.normal.x, 0.01f);
 		plane.normal = Normalize(plane.normal);
 
-		ImGui::End();
+			ImGui::End();
+		}
 
+		color = IsCollision(obb, segment) ? RED : WHITE;
 
 
 		///
@@ -100,7 +102,7 @@ void MoveCamera(RenderingPipeline& renderingPipeline) {
 	auto wheel = input->GetWheel();
 
 	if (input->IsPressMouse(1)) {
-		constexpr float rotSpeed = Math::ToRad(1.0f);
+		constexpr float rotSpeed = 1.0f * Math::ToRadian;
 		renderingPipeline.cameraRotate.x += rotSpeed * static_cast<float>(mouseMove.lY) * 0.1f;
 		renderingPipeline.cameraRotate.y += rotSpeed * static_cast<float>(mouseMove.lX) * 0.1f;
 	}

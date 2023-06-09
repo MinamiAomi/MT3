@@ -39,6 +39,19 @@ Vector3 ClosestPoint(const AABB& aabb, const Sphere& sphere) {
 		std::clamp(sphere.center.z, aabb.min.z, aabb.max.z), };
 }
 
+Vector3 ClosestPoint(const OBB& obb, const Sphere& sphere) {
+	Matrix4x4 obbRotateMatrix = MakeRotateMatrixFromOrientations(obb.orientations);
+	Matrix4x4 obbWorld = obbRotateMatrix;
+	SetTranslate(obbWorld, obb.center);
+	Matrix4x4 obbWorldInverse = MakeInverseMatrix(obbRotateMatrix, obb.center);
+
+	Vector3 centerInOBBLocalSpace = sphere.center * obbWorldInverse;
+	AABB aabbOBBLocal{ .min = -obb.size, .max = obb.size };
+	Sphere sphereObbLocal{ centerInOBBLocalSpace, sphere.radius };
+
+	return ClosestPoint(aabbOBBLocal, sphereObbLocal) * obbWorld;
+}
+
 bool Intersection(const Plane& plane, const Line& line, Vector3& out_intersectionPoint) {
 	float DdotN = Dot(line.diff, plane.normal);
 	if (DdotN == 0.0f) { return false; }

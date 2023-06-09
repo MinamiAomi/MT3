@@ -4,7 +4,6 @@
 #include <Vector3.h>
 #include <Vector4.h>
 #include <Matrix4x4.h>
-#include <MyMath_inline.h>
 #include "Geometry.h"
 
 namespace Math {
@@ -12,17 +11,19 @@ namespace Math {
 	constexpr float TwoPi = Pi * 2.0f;
 	constexpr float HalfPi = Pi * 0.5f;
 
-	constexpr inline float ToRad(float deg) { return deg * Pi / 180.0f; }
-	constexpr inline float ToDeg(float rad) { return rad * 180.0f / Pi; }
+	constexpr float ToRadian = Pi / 180.0f;
+	constexpr float ToDegree = 180.0f / Pi;
 }
 
-static const Vector2 kVector2Zero{ 0.0f,0.0f };
-static const Vector2 kVector2UnitX{ 1.0f,0.0f };
-static const Vector2 kVector2UnitY{ 0.0f,1.0f };
-static const Vector3 kVector3Zero{ 0.0f,0.0f,0.0f };
-static const Vector3 kVector3UnitX{ 1.0f,0.0f,0.0f };
-static const Vector3 kVector3UnitY{ 0.0f,1.0f,0.0f };
-static const Vector3 kVector3UnitZ{ 0.0f,0.0f,1.0f };
+static const Vector2 Vector2Zero{ 0.0f,0.0f };
+static const Vector2 Vector2One{ 1.0f,1.0f };
+static const Vector2 Vector2UnitX{ 1.0f,0.0f };
+static const Vector2 Vector2UnitY{ 0.0f,1.0f };
+static const Vector3 Vector3Zero{ 0.0f,0.0f,0.0f };
+static const Vector3 Vector3One{ 1.0f,1.0f,1.0f };
+static const Vector3 Vector3UnitX{ 1.0f,0.0f,0.0f };
+static const Vector3 Vector3UnitY{ 0.0f,1.0f,0.0f };
+static const Vector3 Vector3UnitZ{ 0.0f,0.0f,1.0f };
 
 inline Vector2 operator+(const Vector2& v);
 inline Vector2 operator-(const Vector2& v);
@@ -77,6 +78,8 @@ inline Matrix4x4 Transpose(const Matrix4x4& m);
 float Determinant(const Matrix4x4& m);
 Matrix4x4 Adjugate(const Matrix4x4& m);
 Matrix4x4 Inverse(const Matrix4x4& m);
+inline Matrix4x4 MakeInverseMatrix(const Vector3& rotate, const Vector3& translate);
+inline Matrix4x4 MakeInverseMatrix(const Matrix4x4& rotate, const Vector3& translate);
 inline Matrix4x4 MakeIdentityMatrix();
 inline Matrix4x4 MakeScaleMatrix(const Vector3& scale);
 inline Matrix4x4 MakeRotateXMatrix(float rad);
@@ -94,7 +97,16 @@ inline Vector3 GetYAxis(const Matrix4x4& m);
 inline Vector3 GetZAxis(const Matrix4x4& m);
 inline Vector3 GetTranslate(const Matrix4x4& m);
 
+inline Matrix4x4& SetXAxis(Matrix4x4& m, const Vector3& v);
+inline Matrix4x4& SetYAxis(Matrix4x4& m, const Vector3& v);
+inline Matrix4x4& SetZAxis(Matrix4x4& m, const Vector3& v);
+inline Matrix4x4& SetTranslate(Matrix4x4& m, const Vector3& v);
+
+inline void GetOrientations(const Matrix4x4& m, Vector3 orientations[3]);
+inline Matrix4x4 MakeRotateMatrixFromOrientations(const Vector3 orientations[3]);
+
 Vector3 Transform(const Vector3& v, const Matrix4x4& m);
 Vector3 TransformNormal(const Vector3& v, const Matrix4x4& m);
 inline Vector3 operator*(const Vector3& v, const Matrix4x4& m);
 
+#include <MyMath_inline.h>
