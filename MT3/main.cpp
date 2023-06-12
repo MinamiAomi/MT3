@@ -11,6 +11,9 @@ const char kWindowTitle[] = "LE2A_19_ミナミアオミ";
 const uint32_t kWindowWidth = 1280;
 const uint32_t kWindowHeight = 720;
 
+#include <string>
+#include <fstream>
+
 /// <summary>
 /// 右クリックを押すと向き
 /// ホイールクリックで左右移動
@@ -30,7 +33,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	RenderingPipeline renderingPipeline{};
 	renderingPipeline.Initalize(static_cast<float>(kWindowWidth), static_cast<float>(kWindowHeight));
 
-	Plane plane{ .normal{0.0f,1.0f,0.0f} };
 
 	// ウィンドウの×ボタンが押されるまでループ
 	while (Novice::ProcessMessage() == 0) {
@@ -47,14 +49,19 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			ImGui::SetNextWindowSize({ 330.0f, 500.0f }, ImGuiCond_Once);
 			ImGui::Begin("Window");
 
-		ImGui::DragFloat("Distance", &plane.distance, 0.01f);
-		ImGui::DragFloat3("Normal", &plane.normal.x, 0.01f);
-		plane.normal = Normalize(plane.normal);
+			static char buf[256]{};
+			ImGui::InputText("FileName", buf, 256);
+			if (ImGui::Button("Save")) {
+				std::string fileName(buf);
+				fileName += ".txt";
+				std::ofstream file(fileName);
+				file << fileName << std::endl;
+				file << "ファイルです" << std::endl;
+			}
 
 			ImGui::End();
 		}
 
-		color = IsCollision(obb, segment) ? RED : WHITE;
 
 
 		///
@@ -67,12 +74,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 		renderingPipeline.DrawGrid(4);
 
-		renderingPipeline.DrawPlane(plane, BLACK);
-		renderingPipeline.DrawPlane(plane, BLACK, 4.0f);
-		renderingPipeline.DrawPlane(plane, BLACK, 6.0f);
-		renderingPipeline.DrawPlane(plane, BLACK, 8.0f);
-		renderingPipeline.DrawPlane(plane, BLACK);
-		renderingPipeline.DrawLine(plane.distance * plane.normal, plane.distance * plane.normal + plane.normal, GREEN);
 
 		renderingPipeline.DrawAxis();
 
@@ -124,11 +125,11 @@ void MoveCamera(RenderingPipeline& renderingPipeline) {
 	ImGui::SetNextWindowSize({ 300.0f, 100.0f }, ImGuiCond_Once);
 	ImGui::Begin("Camera");
 	ImGui::DragFloat3("Camera position", &renderingPipeline.cameraPosition.x, 0.01f);
-	Vector3 deg = Math::ToDeg(renderingPipeline.cameraRotate);
+	Vector3 deg = renderingPipeline.cameraRotate * Math::ToDegree;
 	ImGui::DragFloat3("Camera rotate", &deg.x, 0.1f, 0.0f, 360.0f);
-	renderingPipeline.cameraRotate = Math::ToRad(deg);
+	renderingPipeline.cameraRotate = deg * Math::ToRadian;
 	if (ImGui::Button("Camera reset")) {
-		renderingPipeline.cameraRotate = { Math::ToRad(15.0f), 0.0f, 0.0f };
+		renderingPipeline.cameraRotate = { 15.0f * Math::ToDegree, 0.0f, 0.0f };
 		Vector3 forward = GetZAxis(MakeRotateXYZMatrix(renderingPipeline.cameraRotate));
 		renderingPipeline.cameraPosition = -forward * 6.0f;
 	}

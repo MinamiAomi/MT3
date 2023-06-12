@@ -244,4 +244,3 @@ void RenderingPipeline::DrawOBB(const OBB& obb, uint32_t color) {
 		ScreenDrawLine(vertices[i + 4], vertices[j + 4], color);
 	}
 }
-
