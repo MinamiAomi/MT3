@@ -34,17 +34,16 @@ public:
 	void DrawBox(const Matrix4x4& world, uint32_t color);
 	void DrawAxis();
 
-	///
-	/// Draw Geometry
-	///
-	void DrawSphere(const Sphere& sphere, uint32_t color, uint32_t subdivision = 12);
-	void DrawLine(const Line& line, uint32_t color);
-	void DrawRay(const Ray& ray, uint32_t color);
-	void DrawSegment(const Segment& segment, uint32_t color);
-	void DrawPlane(const Plane& plane, uint32_t color, float size = 2.0f);
-	void DrawTriangle(const Triangle& triangle, uint32_t color);
-	void DrawAABB(const AABB& aabb, uint32_t color);
-	void DrawOBB(const OBB& obb, uint32_t color);
+	// Draw Geometry
+
+	void DrawSphere(const Geometry::Sphere& sphere, uint32_t color, uint32_t subdivision = 12);
+	void DrawLine(const Geometry::Line& line, uint32_t color);
+	void DrawRay(const Geometry::Ray& ray, uint32_t color);
+	void DrawSegment(const Geometry::Segment& segment, uint32_t color);
+	void DrawPlane(const Geometry::Plane& plane, uint32_t color, float size = 2.0f);
+	void DrawTriangle(const Geometry::Triangle& triangle, uint32_t color);
+	void DrawAABB(const Geometry::AABB& aabb, uint32_t color);
+	void DrawOBB(const Geometry::OBB& obb, uint32_t color);
 
 
 

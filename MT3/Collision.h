@@ -1,20 +1,23 @@
 #pragma once
 #include "Geometry.h"
 
-bool IsCollision(const Sphere& sphere1, const Sphere& sphere2);
-bool IsCollision(const Sphere& sphere, const Plane& plane);
-bool IsCollision(const Plane& plane, const Line& line);
-bool IsCollision(const Plane& plane, const Ray& ray);
-bool IsCollision(const Plane& plane, const Segment& segment);
-bool IsCollision(const Triangle& triangle, const Line& line);
-bool IsCollision(const Triangle& triangle, const Ray& ray);
-bool IsCollision(const Triangle& triangle, const Segment& segment);
-bool IsCollision(const AABB& aabb1, const AABB& aabb2);
-bool IsCollision(const AABB& aabb, const Sphere& sphere);
-bool IsCollision(const AABB& aabb, const Line& line);
-bool IsCollision(const AABB& aabb, const Ray& ray);
-bool IsCollision(const AABB& aabb, const Segment& segment);
-bool IsCollision(const OBB& obb, const Sphere& sphere);
-bool IsCollision(const OBB& obb, const Line& line);
-bool IsCollision(const OBB& obb, const Ray& ray);
-bool IsCollision(const OBB& obb, const Segment& segment);
+namespace Collision {
+    bool IsCollision(const Geometry::Sphere& sphere1, const Geometry::Sphere& sphere2);
+    bool IsCollision(const Geometry::Sphere& sphere, const Geometry::Plane& plane);
+    bool IsCollision(const Geometry::Plane& plane, const Geometry::Line& line);
+    bool IsCollision(const Geometry::Plane& plane, const Geometry::Ray& ray);
+    bool IsCollision(const Geometry::Plane& plane, const Geometry::Segment& segment);
+    bool IsCollision(const Geometry::Triangle& triangle, const Geometry::Line& line);
+    bool IsCollision(const Geometry::Triangle& triangle, const Geometry::Ray& ray);
+    bool IsCollision(const Geometry::Triangle& triangle, const Geometry::Segment& segment);
+    bool IsCollision(const Geometry::AABB& aabb1, const Geometry::AABB& aabb2);
+    bool IsCollision(const Geometry::AABB& aabb, const Geometry::Sphere& sphere);
+    bool IsCollision(const Geometry::AABB& aabb, const Geometry::Line& line);
+    bool IsCollision(const Geometry::AABB& aabb, const Geometry::Ray& ray);
+    bool IsCollision(const Geometry::AABB& aabb, const Geometry::Segment& segment);
+    bool IsCollision(const Geometry::OBB& obb, const Geometry::Sphere& sphere);
+    bool IsCollision(const Geometry::OBB& obb, const Geometry::Line& line);
+    bool IsCollision(const Geometry::OBB& obb, const Geometry::Ray& ray);
+    bool IsCollision(const Geometry::OBB& obb, const Geometry::Segment& segment);
+    bool IsCollision(const Geometry::OBB& obb1, const Geometry::OBB& obb2);
+} // namespace
