@@ -1,6 +1,7 @@
 #include "Geometry.h"
 #include "MyMath.h"
 #include <algorithm>
+#include <cassert>
 
 namespace Geometry {
 
@@ -151,8 +152,9 @@ namespace Geometry {
         return Cross(triangle.vertices[1] - triangle.vertices[0], triangle.vertices[2] - triangle.vertices[1]);
     }
 
-    std::array<Vector3, 8> GetVertices(const Vector3& min, const Vector3& max) {
-        std::array<Vector3, 8> vertices{ {
+    void GetVertices(const Vector3& min, const Vector3& max, std::vector<Vector3>& out_vertices) {
+        out_vertices.clear();
+        out_vertices = { {
             { min.x, min.y, min.z },   // 左下前
             { min.x, max.y, min.z },   // 左上前
             { max.x, max.y, min.z },   // 右上前
@@ -162,17 +164,36 @@ namespace Geometry {
             { max.x, max.y, max.z },   // 右上奥
             { max.x, min.y, max.z },   // 右下奥
         } };
-        return vertices;
     }
 
-    std::array<Vector3, 8> GetVertices(const OBB& obb) {
-        auto vertices = GetVertices(-obb.size, obb.size);
+    void GetVertices(const OBB& obb, std::vector<Vector3>& out_vertices) {
+        GetVertices(-obb.size, obb.size, out_vertices);
         Matrix4x4 worldMatrix = MakeRotateMatrixFromOrientations(obb.orientations);
         SetTranslate(worldMatrix, obb.center);
-        for (auto& vertex : vertices) {
+        for (auto& vertex : out_vertices) {
             vertex = vertex * worldMatrix;
         }
-        return vertices;
+    }
+
+    bool IsSeparateAxis(const Vector3& normal, const std::vector<Vector3>& vertices1, const std::vector<Vector3>& vertices2) {
+        assert(!vertices1.empty() && !vertices2.empty());
+        float min1 = 0, max1 = 0;
+        float min2 = 0, max2 = 0;
+        min1 = max1 = Dot(normal, vertices1[0]);
+        min2 = max2 = Dot(normal, vertices2[0]);
+        for (size_t i = 1; i < vertices1.size(); ++i) {
+            float dot1 = Dot(normal, vertices1[i]);
+            min1 = (std::min)(dot1, min1);
+            max1 = (std::max)(dot1, max1);
+        }
+        for (size_t i = 1; i < vertices2.size(); ++i) {
+            float dot2 = Dot(normal, vertices2[i]);
+            min2 = (std::min)(dot2, min2);
+            max2 = (std::max)(dot2, max2);
+        }
+        float sumSpan = max1 - min1 + max2 - min2;
+        float longSpan = (std::max)(max1, max2) - (std::min)(min1, min2);
+        return sumSpan < longSpan;
     }
 
 }

@@ -1,6 +1,7 @@
 #pragma once
 #include <Vector3.h>
 #include <array>
+#include <vector>
 
 namespace Geometry {
     // 球
@@ -63,7 +64,8 @@ namespace Geometry {
     Vector3 CalcNormal(const Vector3& a, const Vector3& b, const Vector3& c);
     Vector3 CalcNormal(const Triangle& triangle);
 
-    std::array<Vector3, 8> GetVertices(const Vector3& min, const Vector3& max);
-    std::array<Vector3, 8> GetVertices(const OBB& obb);
+    void GetVertices(const Vector3& min, const Vector3& max, std::vector<Vector3>& out_vertices);
+    void GetVertices(const OBB& obb, std::vector<Vector3>& out_vertices);
 
+    bool IsSeparateAxis(const Vector3& normal, const std::vector<Vector3>& vertices1, const std::vector<Vector3>& vertices2);
 }

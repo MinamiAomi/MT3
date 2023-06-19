@@ -59,7 +59,8 @@ void RenderingPipeline::DrawGrid(float width, uint32_t subdivision) {
 }
 
 void RenderingPipeline::DrawBox(const Matrix4x4& world, uint32_t color) {
-    auto vertices = GetVertices({ -0.5f,-0.5f,-0.5f }, { 0.5f,0.5f,0.5 });
+    std::vector<Vector3> vertices;
+    GetVertices({ -0.5f,-0.5f,-0.5f }, { 0.5f,0.5f,0.5 }, vertices);
     for (auto& vertex : vertices) {
         vertex = vertex * world;
         vertex = Apply(vertex);
@@ -187,7 +188,8 @@ void RenderingPipeline::DrawTriangle(const Triangle& triangle, uint32_t color) {
 }
 
 void RenderingPipeline::DrawAABB(const AABB& aabb, uint32_t color) {
-    auto vertices = GetVertices(aabb.min, aabb.max);
+    std::vector<Vector3> vertices;
+    GetVertices(aabb.min, aabb.max, vertices);
     for (auto& vertex : vertices) {
         vertex = Apply(vertex);
     }
@@ -201,7 +203,8 @@ void RenderingPipeline::DrawAABB(const AABB& aabb, uint32_t color) {
 }
 
 void RenderingPipeline::DrawOBB(const OBB& obb, uint32_t color) {
-    auto vertices = GetVertices(obb);
+    std::vector<Vector3> vertices;
+    GetVertices(obb, vertices);
     for (auto& vertex : vertices) {
         vertex = Apply(vertex);
     }

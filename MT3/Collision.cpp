@@ -192,42 +192,50 @@ namespace Collision {
         return IsCollision(aabbOBBLocal, segmentObbLocal);
     }
 
+    bool IsCollision(const Geometry::OBB& obb, const Geometry::AABB& aabb) {
+        // 頂点を取得
+        std::vector<Vector3> obbVertices, aabbVertices;
+        GetVertices(obb, obbVertices);
+        GetVertices(aabb.min, aabb.max, aabbVertices);
+
+        const Vector3 axes[] = {
+            {1.0f,0.0f,0.0f},
+            {0.0f,1.0f,0.0f},
+            {0.0f,0.0f,1.0f} };
+
+        // 面法線、各辺の組み合わせの外積が分離軸であるか判定
+        for (auto& normal : obb.orientations) {
+            if (Geometry::IsSeparateAxis(normal, obbVertices, obbVertices)) { return false; }
+        }
+        for (auto& normal : axes) {
+            if (Geometry::IsSeparateAxis(normal, obbVertices, aabbVertices)) { return false; }
+        }
+        for (auto& normal1 : obb.orientations) {
+            for (auto& normal2 : axes) {
+                if (Geometry::IsSeparateAxis(Cross(normal1, normal2), obbVertices, aabbVertices)) { return false; }
+            }
+        }
+        return true;
+    }
+
     bool IsCollision(const OBB& obb1, const OBB& obb2) {
         // 頂点を取得
-        auto obb1Vertices = GetVertices(obb1);
-        auto obb2Vertices = GetVertices(obb2);
-
-        // 分離軸の有無
-        auto HasSeparateAxis = [&](const Vector3& normal) {
-            float min1 = 0, max1 = 0;
-            float min2 = 0, max2 = 0;
-            min1 = max1 = Dot(normal, obb1Vertices[0]);
-            min2 = max2 = Dot(normal, obb2Vertices[0]);
-            for (size_t i = 1; i < 8; ++i) {
-                float dot1 = Dot(normal, obb1Vertices[i]);
-                float dot2 = Dot(normal, obb2Vertices[i]);
-                min1 = (std::min)(dot1, min1);
-                max1 = (std::max)(dot1, max1);
-                min2 = (std::min)(dot2, min2);
-                max2 = (std::max)(dot2, max2);
-            }
-            float sumSpan = max1 - min1 + max2 - min2;
-            float longSpan = (std::max)(max1, max2) - (std::min)(min1, min2);
-            return sumSpan < longSpan;
-        };
+        std::vector<Vector3> obb1Vertices, obb2Vertices;
+        GetVertices(obb1, obb1Vertices);
+        GetVertices(obb2, obb2Vertices);
 
         // 面法線、各辺の組み合わせの外積が分離軸であるか判定
         for (auto& normal : obb1.orientations) {
-            if (HasSeparateAxis(normal)) { return false; }
+            if (Geometry::IsSeparateAxis(normal, obb1Vertices, obb2Vertices)) { return false; }
         }
         for (auto& normal : obb2.orientations) {
-            if (HasSeparateAxis(normal)) { return false; }
+            if (Geometry::IsSeparateAxis(normal, obb1Vertices, obb2Vertices)) { return false; }
         }
         for (auto& normal1 : obb1.orientations) {
             for (auto& normal2 : obb2.orientations) {
-                if (HasSeparateAxis(Cross(normal1, normal2))) { return false; }
+                if (Geometry::IsSeparateAxis(Cross(normal1, normal2), obb1Vertices, obb2Vertices)) { return false; }
             }
-        }  
+        }
         return true;
     }
 }

@@ -19,5 +19,6 @@ namespace Collision {
     bool IsCollision(const Geometry::OBB& obb, const Geometry::Line& line);
     bool IsCollision(const Geometry::OBB& obb, const Geometry::Ray& ray);
     bool IsCollision(const Geometry::OBB& obb, const Geometry::Segment& segment);
+    bool IsCollision(const Geometry::OBB& obb, const Geometry::AABB& aabb);
     bool IsCollision(const Geometry::OBB& obb1, const Geometry::OBB& obb2);
 } // namespace
