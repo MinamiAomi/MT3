@@ -33,12 +33,10 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
     RenderingPipeline renderingPipeline{};
     renderingPipeline.Initalize(static_cast<float>(kWindowWidth), static_cast<float>(kWindowHeight));
 
-    Geometry::OBB obb1{ .center{}, .orientations{Vector3UnitX,Vector3UnitY,Vector3UnitZ}, .size{ 1.0f,1.0f,1.0f } };
-    Geometry::OBB obb2{ .center{2.0f,0.0f,0.0f}, .orientations{Vector3UnitX,Vector3UnitY,Vector3UnitZ}, .size{ 1.0f,1.0f,1.0f } };
-    Vector3 rotate1{};
-    Vector3 rotate2{};
+    Vector3 controlPoint0 = { -1.0f,0.0f,0.0f };
+    Vector3 controlPoint1 = { 0.0f,1.0f,0.0f };
+    Vector3 controlPoint2 = { 1.0f,0.0f,0.0f };
 
-    uint32_t color = WHITE;
 
     // ウィンドウの×ボタンが押されるまでループ
     while (Novice::ProcessMessage() == 0) {
@@ -55,25 +53,11 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
             ImGui::SetNextWindowSize({ 330.0f, 500.0f }, ImGuiCond_Once);
             ImGui::Begin("Window");
 
-            ImGui::DragFloat3("obb1 center", &obb1.center.x, 0.01f);
-            ImGui::DragFloat3Degree("obb1 rotate", &rotate1.x);
-            ImGui::DragFloat3("obb1 size", &obb1.size.x, 0.01f, 0.01f, 5.0f);
-            
-            ImGui::DragFloat3("obb2 center", &obb2.center.x, 0.01f);
-            ImGui::DragFloat3Degree("obb2 rotate", &rotate2.x);
-            ImGui::DragFloat3("obb2 size", &obb2.size.x, 0.01f, 0.01f, 5.0f);
-
-            GetOrientations(MakeRotateXYZMatrix(rotate1), obb1.orientations);
-            GetOrientations(MakeRotateXYZMatrix(rotate2), obb2.orientations);
+            ImGui::DragFloat3("ControlPoint[0]", &controlPoint0.x, 0.01f);
+            ImGui::DragFloat3("ControlPoint[2]", &controlPoint1.x, 0.01f);
+            ImGui::DragFloat3("ControlPoint[1]", &controlPoint2.x, 0.01f);
 
             ImGui::End();
-        }
-
-        if (Collision::IsCollision(obb1, obb2)) {
-            color = RED;
-        }
-        else {
-            color = WHITE;
         }
 
 
@@ -87,8 +71,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
         renderingPipeline.DrawGrid(4);
 
-        renderingPipeline.DrawOBB(obb1, color);
-        renderingPipeline.DrawOBB(obb2, color);
+        renderingPipeline.DrawBezier(controlPoint0, controlPoint1, controlPoint2);
 
         renderingPipeline.DrawAxis();
 

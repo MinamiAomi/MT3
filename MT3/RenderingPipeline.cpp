@@ -216,3 +216,24 @@ void RenderingPipeline::DrawOBB(const OBB& obb, uint32_t color) {
         ScreenDrawLine(vertices[i + 4], vertices[j + 4], color);
     }
 }
+
+void RenderingPipeline::DrawBezier(const Vector3& controlPoint0, const Vector3& controlPoint1, const Vector3& controlPoint2) {
+    const uint32_t kSegmentCount = 100;
+    const uint32_t kVertexCount = kSegmentCount + 1;
+
+    Vector3 vertices[kVertexCount]{};
+    for (uint32_t i = 0; i < kVertexCount; ++i) {
+        float t = static_cast<float>(i) / static_cast<float>(kSegmentCount);
+        Vector3 p0p1 = Lerp(controlPoint0, controlPoint1, t);
+        Vector3 p1p2 = Lerp(controlPoint1, controlPoint2, t);
+        vertices[i] = Lerp(p0p1, p1p2, t);
+        vertices[i] = Apply(vertices[i]);
+    }
+
+    for (uint32_t i = 0; i < kSegmentCount; ++i) {
+        ScreenDrawLine(vertices[i], vertices[i + 1], WHITE);
+    }
+    DrawSphere({ controlPoint0,0.02f }, BLACK, 4);
+    DrawSphere({ controlPoint1,0.02f }, BLACK, 4);
+    DrawSphere({ controlPoint2,0.02f }, BLACK, 4);
+}

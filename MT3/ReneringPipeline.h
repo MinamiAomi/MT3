@@ -45,6 +45,8 @@ public:
 	void DrawAABB(const Geometry::AABB& aabb, uint32_t color);
 	void DrawOBB(const Geometry::OBB& obb, uint32_t color);
 
+	void DrawBezier(const Vector3& controlPoint0, const Vector3& controlPoint1, const Vector3& controlPoint2);
+
 
 
 private:
