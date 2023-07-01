@@ -14,8 +14,6 @@ const uint32_t kWindowHeight = 720;
 float areaHalfWidth = 300.0f;
 float areaHalfHeight = 300.0f;
 
-bool a = 0;
-
 struct AABB {
     Vector2 min;
     Vector2 max;
@@ -91,6 +89,8 @@ struct BVHNode {
     std::shared_ptr<Object> object;
 };
 
+
+
 class BVH {
 public:
     void Clear() {
@@ -102,9 +102,8 @@ public:
 
     void Build() {
         buildNodeCallCount = 0;
-        a = true;
         leafs_.clear();
-        root_ = BuildNodeX(objects_);
+        root_ = BuildSpaceSplitNode(objects_);
     }
 
     void Traversal() {
@@ -127,6 +126,8 @@ public:
 private:
     std::unique_ptr<BVHNode> BuildNodeX(std::vector<std::shared_ptr<Object>>& objects);
     std::unique_ptr<BVHNode> BuildNodeY(std::vector<std::shared_ptr<Object>>& objects);
+    std::unique_ptr<BVHNode> BuildNode(std::vector<std::shared_ptr<Object>>& objects);
+    std::unique_ptr<BVHNode> BuildSpaceSplitNode(std::vector<std::shared_ptr<Object>>& objects);
     void DrawNode(BVHNode* node, const Matrix4x4& mat);
     void TraversalNode(BVHNode* node, BVHNode* leaf);
 
@@ -304,11 +305,7 @@ std::unique_ptr<BVHNode> BVH::BuildNodeX(std::vector<std::shared_ptr<Object>>& o
                 return object1->center.x > object2->center.x;
             });
         size_t splitIndex = objects.size() / 2;
-        if (a) {
-            (*(objects.begin() + (splitIndex - 1)))->color = BLUE;
-            (*(objects.begin() + (splitIndex)))->color = GREEN;
-            a = false;
-        }
+
         std::vector<std::shared_ptr<Object>> leftSubset(objects.begin(), objects.begin() + splitIndex);
         std::vector<std::shared_ptr<Object>> rightSubset(objects.begin() + splitIndex, objects.end());
 
@@ -362,6 +359,104 @@ std::unique_ptr<BVHNode> BVH::BuildNodeY(std::vector<std::shared_ptr<Object>>& o
     return node;
 }
 
+std::unique_ptr<BVHNode> BVH::BuildNode(std::vector<std::shared_ptr<Object>>& objects) {
+    buildNodeCallCount++;
+    std::unique_ptr<BVHNode> node = std::make_unique<BVHNode>();
+
+    if (objects.empty()) {
+        return node;
+    }
+
+    auto objIter = objects.begin();
+    node->aabb = (*objIter)->GetAABB();
+    for (; objIter != objects.end(); ++objIter) {
+        AABB objAABB = (*objIter)->GetAABB();
+        if (objAABB.min.x < node->aabb.min.x) { node->aabb.min.x = objAABB.min.x; }
+        if (objAABB.min.y < node->aabb.min.y) { node->aabb.min.y = objAABB.min.y; }
+        if (objAABB.max.x > node->aabb.max.x) { node->aabb.max.x = objAABB.max.x; }
+        if (objAABB.max.y > node->aabb.max.y) { node->aabb.max.y = objAABB.max.y; }
+    }
+
+    float xsize = node->aabb.max.x - node->aabb.min.x;
+    float ysize = node->aabb.max.y - node->aabb.min.y;
+    int axisOffset = xsize > ysize ? 0 : 1;
+
+    auto Compare = [&](const std::shared_ptr<Object>& object1, const std::shared_ptr<Object>& object2) {
+        return (&object1->center.x)[axisOffset] > (&object2->center.x)[axisOffset];
+    };
+
+    if (objects.size() > 1) {
+        std::sort(objects.begin(), objects.end(), Compare);
+
+        size_t splitIndex = objects.size() / 2;
+        std::vector<std::shared_ptr<Object>> leftSubset(objects.begin(), objects.begin() + splitIndex);
+        std::vector<std::shared_ptr<Object>> rightSubset(objects.begin() + splitIndex, objects.end());
+
+        node->left = BuildNode(leftSubset);
+        node->right = BuildNode(rightSubset);
+    }
+    else {
+        node->object = objects[0];
+        leafs_.emplace_back(node.get());
+    }
+
+    return node;
+}
+
+std::unique_ptr<BVHNode> BVH::BuildSpaceSplitNode(std::vector<std::shared_ptr<Object>>& objects) {
+    buildNodeCallCount++;
+    std::unique_ptr<BVHNode> node = std::make_unique<BVHNode>();
+
+    if (objects.empty()) {
+        return node;
+    }
+
+    auto objIter = objects.begin();
+    node->aabb = (*objIter)->GetAABB();
+    for (; objIter != objects.end(); ++objIter) {
+        AABB objAABB = (*objIter)->GetAABB();
+        if (objAABB.min.x < node->aabb.min.x) { node->aabb.min.x = objAABB.min.x; }
+        if (objAABB.min.y < node->aabb.min.y) { node->aabb.min.y = objAABB.min.y; }
+        if (objAABB.max.x > node->aabb.max.x) { node->aabb.max.x = objAABB.max.x; }
+        if (objAABB.max.y > node->aabb.max.y) { node->aabb.max.y = objAABB.max.y; }
+    }
+
+    float size[] = {
+        node->aabb.max.x - node->aabb.min.x,
+        node->aabb.max.y - node->aabb.min.y
+    };
+    int axisOffset = size[0] > size[1] ? 0 : 1;
+    float split = (&node->aabb.min.x)[axisOffset] + size[axisOffset] * 0.5f;
+
+    auto Compare = [&](const std::shared_ptr<Object>& object) {
+        return (&object->center.x)[axisOffset] < split;
+    };
+
+    if (objects.size() > 1) {
+        auto pos = std::partition(objects.begin(), objects.end(), Compare);
+        if (pos == objects.end() - 1 || pos == objects.begin()) {
+            std::vector<std::shared_ptr<Object>> leftSubset(objects.begin(), objects.begin() + 1);
+            std::vector<std::shared_ptr<Object>> rightSubset(objects.begin() + 1, objects.end());
+
+            node->left = BuildSpaceSplitNode(leftSubset);
+            node->right = BuildSpaceSplitNode(rightSubset);
+        }
+        else {
+            std::vector<std::shared_ptr<Object>> leftSubset(objects.begin(), pos);
+            std::vector<std::shared_ptr<Object>> rightSubset(pos, objects.end());
+
+            node->left = BuildSpaceSplitNode(leftSubset);
+            node->right = BuildSpaceSplitNode(rightSubset);
+        }
+    }
+    else {
+        node->object = objects[0];
+        leafs_.emplace_back(node.get());
+    }
+
+    return node;
+}
+
 void BVH::DrawNode(BVHNode* node, const Matrix4x4& mat) {
     if (node->right) {
         DrawNode(node->right.get(), mat);
@@ -372,7 +467,10 @@ void BVH::DrawNode(BVHNode* node, const Matrix4x4& mat) {
     float width = node->aabb.max.x - node->aabb.min.x;
     float height = node->aabb.max.y - node->aabb.min.y;
     Vector3 screenPos = Vector3{ node->aabb.min.x,node->aabb.min.y,0.0f } *mat;
+    Novice::SetBlendMode(kBlendModeAdd);
+    Novice::DrawBox(int(screenPos.x), int(screenPos.y), int(width), -int(height), 0.0f, 0xFFFFFF11, kFillModeSolid);
     Novice::DrawBox(int(screenPos.x), int(screenPos.y), int(width), -int(height), 0.0f, WHITE, kFillModeWireFrame);
+    Novice::SetBlendMode(kBlendModeNormal);
 }
 
 void BVH::TraversalNode(BVHNode* node, BVHNode* leaf) {
