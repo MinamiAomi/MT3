@@ -33,10 +33,21 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
     RenderingPipeline renderingPipeline{};
     renderingPipeline.Initalize(static_cast<float>(kWindowWidth), static_cast<float>(kWindowHeight));
 
-    Vector3 controlPoint0 = { -0.8f,0.58f,1.0f };
-    Vector3 controlPoint1 = { 1.76f,1.0f,-0.3f };
-    Vector3 controlPoint2 = { 0.94f,-0.7f,2.3f };
-    Vector3 controlPoint3 = { -0.53f,-0.26f,-0.15f };
+    Vector3 translates[3] = {
+        {0.2f, 1.0f,0.0f},
+        {0.4f, 0.0f,0.0f},
+        {0.3f, 0.0f,0.0f},
+    };
+    Vector3 rotates[3] = {
+        {0.0f, 0.0f,-6.8f},
+        {0.0f, 0.0f,-1.4f},
+        {0.0f, 0.0f,0.0f},
+    };
+    Vector3 scales[3] = {
+       {1.0f, 1.0f,1.0f},
+       {1.0f, 1.0f,1.0f},
+       {1.0f, 1.0f,1.0f},
+    };
 
 
     // ウィンドウの×ボタンが押されるまでループ
@@ -54,14 +65,32 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
             ImGui::SetNextWindowSize({ 330.0f, 500.0f }, ImGuiCond_Once);
             ImGui::Begin("Window");
 
-            ImGui::DragFloat3("ControlPoint[0]", &controlPoint0.x, 0.01f);
-            ImGui::DragFloat3("ControlPoint[1]", &controlPoint1.x, 0.01f);
-            ImGui::DragFloat3("ControlPoint[2]", &controlPoint2.x, 0.01f);
-            ImGui::DragFloat3("ControlPoint[3]", &controlPoint3.x, 0.01f);
+            ImGui::DragFloat3("translates[0]", &translates[0].x, 0.01f);
+            ImGui::DragFloat3Degree("rotates[0]", &rotates[0].x, 0.1f);
+            ImGui::DragFloat3("scales[0]", &scales[0].x, 0.01f);
+
+            ImGui::DragFloat3("translates[1]", &translates[1].x, 0.01f);
+            ImGui::DragFloat3Degree("rotates[1]", &rotates[1].x, 0.1f);
+            ImGui::DragFloat3("scales[1]", &scales[1].x, 0.01f);
+
+            ImGui::DragFloat3("translates[2]", &translates[2].x, 0.01f);
+            ImGui::DragFloat3Degree("rotates[2]", &rotates[2].x, 0.1f);
+            ImGui::DragFloat3("scales[2]", &scales[2].x, 0.01f);
 
             ImGui::End();
         }
 
+        Matrix4x4 shoulderLocalMatrix = MakeAffineMatrix(scales[0], rotates[0], translates[0]);
+        Matrix4x4 elbowLocalMatrix = MakeAffineMatrix(scales[1], rotates[1], translates[1]);
+        Matrix4x4 handLocalMatrix = MakeAffineMatrix(scales[2], rotates[2], translates[2]);
+
+        Matrix4x4 shoulderWorldMatrix = shoulderLocalMatrix;
+        Matrix4x4 elbowWorldMatrix = elbowLocalMatrix * shoulderWorldMatrix;
+        Matrix4x4 handWorldMatrix = handLocalMatrix * elbowWorldMatrix;
+
+        Vector3 shoulderPosition = GetTranslate(shoulderWorldMatrix);
+        Vector3 elbowPosition = GetTranslate(elbowWorldMatrix);
+        Vector3 handPosition = GetTranslate(handWorldMatrix);
 
         ///
         /// ↑更新処理ここまで
@@ -73,7 +102,12 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
         renderingPipeline.DrawGrid(4);
 
-        renderingPipeline.DrawCatmullRom(controlPoint0, controlPoint1, controlPoint2, controlPoint3);
+        renderingPipeline.DrawSphere({ GetTranslate(shoulderWorldMatrix), 0.1f }, RED);
+        renderingPipeline.DrawSphere({ GetTranslate(elbowWorldMatrix), 0.1f }, GREEN);
+        renderingPipeline.DrawSphere({ GetTranslate(handWorldMatrix), 0.1f }, BLUE);
+
+        renderingPipeline.DrawLine(shoulderPosition, elbowPosition, WHITE);
+        renderingPipeline.DrawLine(elbowPosition, handPosition, WHITE);
 
         renderingPipeline.DrawAxis();
 

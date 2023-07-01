@@ -62,13 +62,13 @@ namespace ImGui {
     }
     bool DragFloatDegree(const char* label, float* const v, float v_speed) {
         float deg = *v * Math::ToDegree;
-        bool result = DragFloat(label, &deg, v_speed, 0.0f, 360.0f);
+        bool result = DragFloat(label, &deg, v_speed, -360.0f, 360.0f);
         *v = deg * Math::ToRadian;
         return result;
     }
     bool DragFloat3Degree(const char* label, float* const v, float v_speed) {
         float deg[] = { v[0] * Math::ToDegree, v[1] * Math::ToDegree, v[2] * Math::ToDegree };
-        bool result = DragFloat3(label, deg, v_speed, 0.0f, 360.0f);
+        bool result = DragFloat3(label, deg, v_speed, -360.0f, 360.0f);
         v[0] = deg[0] * Math::ToRadian;
         v[1] = deg[1] * Math::ToRadian;
         v[2] = deg[2] * Math::ToRadian;
