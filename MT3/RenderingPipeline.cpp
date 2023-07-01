@@ -233,7 +233,40 @@ void RenderingPipeline::DrawBezier(const Vector3& controlPoint0, const Vector3& 
     for (uint32_t i = 0; i < kSegmentCount; ++i) {
         ScreenDrawLine(vertices[i], vertices[i + 1], WHITE);
     }
-    DrawSphere({ controlPoint0,0.02f }, BLACK, 4);
-    DrawSphere({ controlPoint1,0.02f }, BLACK, 4);
-    DrawSphere({ controlPoint2,0.02f }, BLACK, 4);
+    DrawSphere({ controlPoint0,0.01f }, BLACK, 3);
+    DrawSphere({ controlPoint1,0.01f }, BLACK, 3);
+    DrawSphere({ controlPoint2,0.01f }, BLACK, 3);
+}
+
+void RenderingPipeline::DrawCatmullRom(const Vector3& controlPoint0, const Vector3& controlPoint1, const Vector3& controlPoint2, const Vector3& controlPoint3) {
+    const uint32_t kSectionCount = 3;
+    const uint32_t kSegmentCountInSection = 50;
+    const uint32_t kVertexCount = kSegmentCountInSection * kSectionCount + 1;
+
+    Vector3 vertices[kVertexCount]{};
+    for (uint32_t i = 0; i < kVertexCount; ++i) {
+        float t = static_cast<float>(i) / static_cast<float>(kSegmentCountInSection);
+        if (t <= 1.0f) {
+            vertices[i] = CatmullRomSpline(controlPoint0, controlPoint0, controlPoint1, controlPoint2, t);
+        }
+        else if (t <= 2.0f) {
+            vertices[i] = CatmullRomSpline(controlPoint0, controlPoint1, controlPoint2, controlPoint3, t - 1.0f);
+        }
+        else {
+            vertices[i] = CatmullRomSpline(controlPoint1, controlPoint2, controlPoint3, controlPoint3, t - 2.0f);
+        }
+
+        vertices[i] = Apply(vertices[i]);
+    }
+
+    for (uint32_t i = 0; i < kSectionCount; ++i) {
+        for (uint32_t j = 0; j < kSegmentCountInSection; ++j) {
+            uint32_t vertexIndex = i * kSegmentCountInSection + j;
+            ScreenDrawLine(vertices[vertexIndex], vertices[vertexIndex + 1], WHITE);
+        }
+    }
+    DrawSphere({ controlPoint0,0.01f }, BLACK, 3);
+    DrawSphere({ controlPoint1,0.01f }, BLACK, 3);
+    DrawSphere({ controlPoint2,0.01f }, BLACK, 3);
+    DrawSphere({ controlPoint3,0.01f }, BLACK, 3);
 }

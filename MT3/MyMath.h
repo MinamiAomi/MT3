@@ -106,4 +106,6 @@ Vector3 Transform(const Vector3& v, const Matrix4x4& m);
 Vector3 TransformNormal(const Vector3& v, const Matrix4x4& m);
 inline Vector3 operator*(const Vector3& v, const Matrix4x4& m);
 
+Vector3 CatmullRomSpline(const Vector3& controlPoint0, const Vector3& controlPoint1, const Vector3& controlPoint2, const Vector3& controlPoint3, float t);
+
 #include <MyMath_inline.h>
