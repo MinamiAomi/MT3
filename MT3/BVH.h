@@ -24,10 +24,6 @@ private:
     std::function<void(void)> collisionCallBack_;
 };
 
-class BVHObject {
-    void* bvhObject;
-};
-
 class BVHTree {
 public:
     void RegisterCollider(Collider* collider);
@@ -44,9 +40,8 @@ private:
         int32_t child1;
         int32_t child2;
         int32_t colliderIndex;
-        bool isLeaf;
 
-        BVHNode() : parent(-1), child1(-1), child2(-1), colliderIndex(-1), isLeaf(false) {}
+        BVHNode() : parent(-1), child1(-1), child2(-1), colliderIndex(-1) {}
     };
 
     std::vector<BVHNode> nodes_;

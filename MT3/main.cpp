@@ -192,9 +192,9 @@ public:
         for (auto& object : objects_) {
             object->Draw(translateMatrix_);
         }
-        if (showBVH) {
+        /*if (showBVH) {
             bvh_.DrawNodeAABB(translateMatrix_);
-        }
+        }*/
     }
 
 private:
@@ -467,10 +467,10 @@ void BVH::DrawNode(BVHNode* node, const Matrix4x4& mat) {
     float width = node->aabb.max.x - node->aabb.min.x;
     float height = node->aabb.max.y - node->aabb.min.y;
     Vector3 screenPos = Vector3{ node->aabb.min.x,node->aabb.min.y,0.0f } *mat;
-    Novice::SetBlendMode(kBlendModeAdd);
-    Novice::DrawBox(int(screenPos.x), int(screenPos.y), int(width), -int(height), 0.0f, 0xFFFFFF11, kFillModeSolid);
+   // Novice::SetBlendMode(kBlendModeAdd);
+    //Novice::DrawBox(int(screenPos.x), int(screenPos.y), int(width), -int(height), 0.0f, 0xFFFFFF11, kFillModeSolid);
     Novice::DrawBox(int(screenPos.x), int(screenPos.y), int(width), -int(height), 0.0f, WHITE, kFillModeWireFrame);
-    Novice::SetBlendMode(kBlendModeNormal);
+   // Novice::SetBlendMode(kBlendModeNormal);
 }
 
 void BVH::TraversalNode(BVHNode* node, BVHNode* leaf) {

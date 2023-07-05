@@ -10,6 +10,8 @@ public:
 
     Vector2 GetSize() const { return max - min; }
     Vector2 GetCenter() const { return (min + max) * 0.5f; }
+    float GetCenterX() const { return (min.x + max.x) * 0.5f; }
+    float GetCenterY() const { return (min.y + max.y) * 0.5f; }
 
     static AABB Merge(const AABB& aabb1, const AABB& aabb2) {
         AABB aabb;
