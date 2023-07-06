@@ -17,6 +17,9 @@ namespace Math {
 	inline float Lerp(float s, float e, float t) {
 		return s + t * (e - s);
 	}
+	inline float Mid(float x, float y) {
+		return (x + y) * 0.5f;
+	}
 }
 
 static const Vector2 Vector2Zero{ 0.0f,0.0f };
