@@ -22,10 +22,11 @@ public:
     void Initalize(float windowWidth, float windowHeight);
     void UpdateMatrix();
 
-    const Matrix4x4& GetVPVMatrix()const { return m_vpvMatrix; }
+    const Matrix4x4& GetVPVMatrix()const { return vpvMatrix_; }
+    const Matrix4x4& GetVPVMatrixInverse()const { return vpvMatrixInv_; }
 
     inline Vector3 Apply(const Vector3& v) {
-        return Transform(v, m_vpvMatrix);
+        return Transform(v, vpvMatrix_);
     }
 
     void ScreenDrawLine(const Vector3& v1, const Vector3& v2, uint32_t color);
@@ -51,5 +52,6 @@ public:
 
 
 private:
-    Matrix4x4 m_vpvMatrix = {};
+    Matrix4x4 vpvMatrix_ = {};
+    Matrix4x4 vpvMatrixInv_ = {};
 };

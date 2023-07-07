@@ -23,10 +23,12 @@ void RenderingPipeline::UpdateMatrix() {
     Matrix4x4 cameraMat = MakeAffineMatrix({ 1.0f,1.0f,1.0f }, cameraRotate, cameraPosition);
     viewMatrix = Inverse(cameraMat);
 
-    m_vpvMatrix = MakeIdentityMatrix();
-    m_vpvMatrix *= viewMatrix;
-    m_vpvMatrix *= projectionMatrix;
-    m_vpvMatrix *= viewportMatrix;
+    vpvMatrix_ = MakeIdentityMatrix();
+    vpvMatrix_ *= viewMatrix;
+    vpvMatrix_ *= projectionMatrix;
+    vpvMatrix_ *= viewportMatrix;
+
+    vpvMatrixInv_ = Inverse(vpvMatrix_);
 }
 
 void RenderingPipeline::ScreenDrawLine(const Vector3& v1, const Vector3& v2, uint32_t color) {

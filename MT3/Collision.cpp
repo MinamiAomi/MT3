@@ -15,6 +15,21 @@ namespace Collision {
         return std::abs(dis) <= sphere.radius;
     }
 
+    bool IsCollision(const Geometry::Sphere& sphere, const Geometry::Line& line) {
+        Vector3 cp = ClosestPoint(sphere.center, line);
+        return LengthSquare(cp) <= sphere.radius * sphere.radius;
+    }
+
+    bool IsCollision(const Geometry::Sphere& sphere, const Geometry::Ray& ray) {
+        Vector3 cp = ClosestPoint(sphere.center, ray);
+        return LengthSquare(cp) <= sphere.radius * sphere.radius;
+    }
+
+    bool IsCollision(const Geometry::Sphere& sphere, const Geometry::Segment& segment) {
+        Vector3 cp = ClosestPoint(sphere.center, segment);
+        return LengthSquare(cp) <= sphere.radius * sphere.radius;
+    }
+
     bool IsCollision(const Plane& plane, const Line& line) {
         Vector3 dummy{};
         return Intersection(plane, line, dummy);

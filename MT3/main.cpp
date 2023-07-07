@@ -22,6 +22,72 @@ const uint32_t kWindowHeight = 720;
 /// <param name="renderingPipeline"></param>
 void MoveCamera(RenderingPipeline& renderingPipeline);
 
+Geometry::Ray MouseRay(const RenderingPipeline& renderingPipeline);
+
+class Object;
+
+struct PhysicsObject {
+    Vector3 position;
+    Vector3 velocity;
+    Vector3 acceleration;
+    float mass;
+
+    void AddForce(const Vector3& force) {
+        acceleration += force * (1.0f / mass);
+    }
+
+    void UpdatePosition(float deltaTime) {
+        velocity += acceleration * deltaTime;
+        position += velocity * deltaTime;
+        acceleration = Vector3Zero;
+    }
+};
+
+struct Spring {
+    Vector3 anchor; // アンカー
+    float naturalLength; // 自然長
+    float stiffness; // 硬さ
+    float dempingCoefficient; // 減衰係数
+
+    bool Gui(const char* label) {
+        if (ImGui::TreeNode(label)) {
+            ImGui::DragFloat3("Anchor", &anchor.x, 0.01f);
+            ImGui::DragFloat("NaturalLength ", &naturalLength, 0.1f);
+            ImGui::DragFloat("Stiffness", &stiffness, 0.1f);
+            ImGui::DragFloat("DempingCoefficient", &dempingCoefficient, 0.1f);
+            ImGui::TreePop();
+            return true;
+        }
+        return false;
+    }
+};
+
+struct Ball : public PhysicsObject {
+    float radius;
+    uint32_t color;
+};
+
+Vector3 GravityForce(const PhysicsObject& o) {
+    const Vector3 gravityAcceleration = -Vector3UnitY * 9.8f;
+    return gravityAcceleration * o.mass;
+}
+
+Vector3 SpringForce(const PhysicsObject& o, const Spring& s) {
+    Vector3 difference = o.position - s.anchor;
+    float length = Length(difference);
+    if (length == 0.0f) {
+        return {};
+    }
+    Vector3 direction = difference * (1.0f / length);
+    Vector3 restPosition = s.anchor + direction * s.naturalLength;
+    // 変位ベクトル
+    Vector3 displacement = length * (o.position - restPosition);
+    // 復元力
+    Vector3 restoringForce = -s.stiffness * displacement;
+    // 減衰力
+    Vector3 dempingForce = -s.dempingCoefficient * o.velocity;
+    return restoringForce + dempingForce;
+}
 
 // Windowsアプリでのエントリーポイント(main関数)
 int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
@@ -33,17 +99,23 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
     RenderingPipeline renderingPipeline{};
     renderingPipeline.Initalize(static_cast<float>(kWindowWidth), static_cast<float>(kWindowHeight));
 
-    Vector3 a{ 0.2f, 1.0f, 0.0f };
-    Vector3 b{ 2.4f, 3.1f, 1.2f };
-    Vector3 c = a + b;
-    Vector3 d = a - b;
-    Vector3 e = a * 2.4f;
-    Vector3 rotate{ 0.4f, 1.43f, -0.8f };
-    Matrix4x4 rotateXMatrix = MakeRotateXMatrix(rotate.x);
-    Matrix4x4 rotateYMatrix = MakeRotateYMatrix(rotate.y);
-    Matrix4x4 rotateZMatrix = MakeRotateZMatrix(rotate.z);
-    Matrix4x4 rotateMatrix = rotateXMatrix * rotateYMatrix * rotateZMatrix;
+    Ball ball{};
+    ball.position = { 1.2f, 0.0f, 0.0f };
+    ball.mass = 2.0f;
+    ball.radius = 0.05f;
+    ball.color = BLACK;
 
+
+    std::vector<std::pair<bool, Spring>> springs(4);
+    for (auto& s : springs) {
+        s.first = true;
+        s.second.anchor = { 0.0f, 0.0f, 0.0f };
+        s.second.naturalLength = 1.0f;
+        s.second.stiffness = 100.0f;
+        s.second.dempingCoefficient = 2.0f;
+    }
+
+    float deltaTime = 1.0f / 60.0f;
 
     // ウィンドウの×ボタンが押されるまでループ
     while (Novice::ProcessMessage() == 0) {
@@ -55,19 +127,35 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
         ///
 
         MoveCamera(renderingPipeline);
+
         {
             ImGui::SetNextWindowPos({ (float)kWindowWidth - 330.0f, 0.0f }, ImGuiCond_Once);
             ImGui::SetNextWindowSize({ 330.0f, 500.0f }, ImGuiCond_Once);
             ImGui::Begin("Window");
-
-            ImGui::TextVector3("c", c);
-            ImGui::TextVector3("d", d);
-            ImGui::TextVector3("e", e);
-            ImGui::TextMatrix("matrix", rotateMatrix);
-
+            ImGui::DragFloat3("Ball position", &ball.position.x, 0.01f);
+            ImGui::BeginListBox("Spring");
+            for (auto& s : springs) {
+                size_t index = (&s) - (&springs[0]);
+                s.first = s.second.Gui(("Spring" + std::to_string(index)).c_str());
+            }
+            ImGui::EndListBox();
             ImGui::End();
         }
 
+        ball.AddForce(GravityForce(ball));
+        for (auto& s : springs) {
+            if (s.first) {
+                ball.AddForce(SpringForce(ball, s.second));
+            }
+        }
+
+        ball.UpdatePosition(deltaTime);
+
+
+        auto ray = MouseRay(renderingPipeline);
+        if (Collision::IsCollision(Geometry::Sphere{ ball.position, ball.radius }, ray)) {
+            
+        }
 
         ///
         /// ↑更新処理ここまで
@@ -78,6 +166,14 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
         ///
 
         renderingPipeline.DrawGrid(4);
+
+        for (auto& s : springs) {
+            if (s.first) {
+                renderingPipeline.DrawLine(ball.position, s.second.anchor, WHITE);
+                renderingPipeline.DrawSphere({ s.second.anchor, 0.02f }, BLACK);
+            }
+        }
+        renderingPipeline.DrawSphere({ ball.position,ball.radius }, ball.color);
 
         renderingPipeline.DrawAxis();
 
@@ -138,4 +234,21 @@ void MoveCamera(RenderingPipeline& renderingPipeline) {
         renderingPipeline.cameraPosition = -forward * 6.0f;
     }
     ImGui::End();
+}
+
+Geometry::Ray MouseRay(const RenderingPipeline& renderingPipeline) {
+    auto input = Input::GetInstance();
+
+    Vector2 screenMousePosition = input->GetMousePosition();
+
+    Vector3 mouseNear = { screenMousePosition.x, screenMousePosition.y, 0.0f };
+    Vector3 mouseFar = { screenMousePosition.x, screenMousePosition.y, 1.0f };
+
+    mouseNear = Transform(mouseNear, renderingPipeline.GetVPVMatrixInverse());
+    mouseFar = Transform(mouseFar, renderingPipeline.GetVPVMatrixInverse());
+
+    Geometry::Ray ray{};
+    ray.origin = mouseNear;
+    ray.diff = mouseFar - mouseNear;
+    return ray;
 }
