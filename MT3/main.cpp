@@ -173,9 +173,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
                 }
             }
         }
-        else {
-            isDrag = false;
-        }
+        else { isDrag = false; }
 
         if (isDrag) {
             auto ray = MouseRay(renderingPipeline);
@@ -183,7 +181,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
             ball.position = ray.origin + Normalize(ray.diff) * distance;
             ball.velocity = Vector3Zero;
         }
-       
+
         ///
         /// ↑更新処理ここまで
         ///
