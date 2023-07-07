@@ -102,7 +102,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
     renderingPipeline.Initalize(static_cast<float>(kWindowWidth), static_cast<float>(kWindowHeight));
 
     Ball ball{};
-    ball.position = { 1.2f, 0.0f, 0.0f };
+    ball.position = { 0.8f, 0.2f, 0.0f };
     ball.mass = 2.0f;
     ball.radius = 0.05f;
     ball.color = BLUE;
@@ -110,14 +110,15 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
     std::vector<Spring> springs(1);
     springs[0].active = true;
-    springs[0].anchor = { 0.0f, 0.0f, 0.0f };
-    springs[0].naturalLength = 1.0f;
+    springs[0].anchor = { 0.0f, 1.0f, 0.0f };
+    springs[0].naturalLength = 0.7f;
     springs[0].stiffness = 100.0f;
     springs[0].dempingCoefficient = 2.0f;
 
     float deltaTime = 1.0f / 60.0f;
 
     bool isDrag = false;
+    bool stop = true;
 
     // ウィンドウの×ボタンが押されるまでループ
     while (Novice::ProcessMessage() == 0) {
@@ -134,8 +135,12 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
             ImGui::SetNextWindowPos({ (float)kWindowWidth - 330.0f, 0.0f }, ImGuiCond_Once);
             ImGui::SetNextWindowSize({ 330.0f, 500.0f }, ImGuiCond_Once);
             ImGui::Begin("Window");
+
+            stop = stop ? !ImGui::Button("Start", { 50,0 }) : ImGui::Button("Stop", { 50,0 });
+
             ImGui::DragFloat3("Ball position", &ball.position.x, 0.01f);
             ImGui::DragFloat3("Ball velocity", &ball.velocity.x, 0.01f);
+
             if (ImGui::Button("Add Spring")) {
                 Spring s{};
                 s.active = true;
@@ -149,20 +154,23 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
                 size_t index = (&s) - (&springs[0]);
                 s.Gui(("Spring" + std::to_string(index)).c_str());
             }
+
             ImGui::End();
         }
 
-        // 重力を計算する
-        //ball.AddForce(GravityForce(ball));
+        if (!stop) {
+            // 重力を計算する
+            ball.AddForce(GravityForce(ball));
 
-        // すべてのばねの力を計算する
-        for (auto& s : springs) {
-            if (s.active) {
-                ball.AddForce(SpringForce(ball, s));
+            // すべてのばねの力を計算する
+            for (auto& s : springs) {
+                if (s.active) {
+                    ball.AddForce(SpringForce(ball, s));
+                }
             }
-        }
 
-        ball.UpdatePosition(deltaTime);
+            ball.UpdatePosition(deltaTime);
+        }
 
         // ドラッグ処理
         if (input->IsPressMouse(0)) {
