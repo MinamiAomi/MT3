@@ -2,29 +2,60 @@
 
 #include "MyMath.h"
 
+#include <limits>
+
 class AABB {
 public:
-    AABB() : min({}), max({}) {}
+    AABB() :
+        min({ std::numeric_limits<float>::max(), std::numeric_limits<float>::max() }),
+        max({ std::numeric_limits<float>::min(), std::numeric_limits<float>::min() }) {}
     AABB(const Vector2& min, const Vector2& max) : min(min), max(max) {}
+    AABB(const Vector2& v1, const Vector2& v2, const Vector2& v3) : min(v1), max(v1) {
+        Include(v2);
+        Include(v3);
+    }
     explicit AABB(const Vector2& minmax) : min(minmax), max(minmax) {}
 
-    Vector2 GetSize() const { return max - min; }
-    Vector2 GetCenter() const { return (min + max) * 0.5f; }
-    float GetCenterX() const { return (min.x + max.x) * 0.5f; }
-    float GetCenterY() const { return (min.y + max.y) * 0.5f; }
-
-    static AABB Merge(const AABB& aabb1, const AABB& aabb2) {
-        AABB aabb;
-        aabb.min = Min(aabb1.min, aabb2.min);
-        aabb.max = Min(aabb1.max, aabb2.max);
-        return aabb;
+    void Include(const AABB& aabb) {
+        min = Min(min, aabb.min);
+        max = Max(max, aabb.max);
     }
-    static bool IsCollision(const AABB& aabb1, const AABB& aabb2) {
+    void Include(const Vector2& point) {
+        min = Min(min, point);
+        max = Max(max, point);
+    }
+
+    Vector2 Extent() const { return max - min; }
+    float Extent(size_t dim) const { return max[dim] - min[dim]; }
+
+    Vector2 Center() const { return (min + max) * 0.5f; }
+    float Center(size_t dim) const { return (min[dim] + max[dim]) * 0.5f; }
+
+    bool Contains(const AABB& aabb) const {
         return
-            (aabb1.min.x <= aabb2.max.x && aabb1.max.x >= aabb2.min.x) &&
-            (aabb1.min.y <= aabb2.max.y && aabb1.max.y >= aabb2.min.y);
+            min.x <= aabb.min.x &&
+            aabb.max.x <= max.x &&
+            min.y <= aabb.min.y &&
+            aabb.max.y <= max.y;
+    }
+    bool Contains(const Vector2& point) const {
+        return
+            min.x <= point.x &&
+            point.x <= max.x &&
+            min.y <= point.y &&
+            point.y <= max.y;
+    }
+    bool Intersects(const AABB& aabb) const {
+        return
+            min.x <= aabb.max.x &&
+            aabb.min.x <= max.x &&
+            min.y <= aabb.max.y &&
+            aabb.min.y <= max.y;
+    }
+    size_t LongestAxis() const {
+        return Extent(0) > Extent(1) ? 0 : 1;
+
     }
 
-    
     Vector2 min, max;
 };
