@@ -141,6 +141,7 @@
     <ClInclude Include="C:\KamataEngine\DirectXGame\scene\GameScene.h" />
     <ClInclude Include="C:\KamataEngine\Adapter\Novice.h" />
     <ClInclude Include="Collision.h" />
+    <ClInclude Include="ConvexPolygon.h" />
     <ClInclude Include="Geometry.h" />
     <ClInclude Include="PrintUtils.h" />
     <ClInclude Include="ReneringPipeline.h" />
