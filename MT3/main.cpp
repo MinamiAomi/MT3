@@ -14,6 +14,9 @@ const uint32_t kWindowHeight = 720;
 
 void DrawConvexPolygon(const ConvexPolygon& convexPolygon, unsigned int color, FillMode fillMode);
 
+Vector2 cameraPos;
+void DrawCircle(const Vector2& c, float r, unsigned int color);
+
 // Windowsアプリでのエントリーポイント(main関数)
 int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
@@ -86,6 +89,11 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
     // ライブラリの終了
     Novice::Finalize();
     return 0;
+}
+
+void DrawCircle(const Vector2& c, float r, unsigned int color) {
+    Vector2 sc = c - cameraPos;
+    Novice::DrawEllipse(int(c.x), int(c.y), r, r, 0.0f, color, kFillModeSolid);
 }
 
 //void DrawConvexPolygon(const ConvexPolygon& convexPolygon, unsigned int color, FillMode fillMode) {
