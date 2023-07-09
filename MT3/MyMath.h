@@ -7,16 +7,16 @@
 #include "Geometry.h"
 
 namespace Math {
-	constexpr float Pi = 3.141592653589793f;
-	constexpr float TwoPi = Pi * 2.0f;
-	constexpr float HalfPi = Pi * 0.5f;
+    constexpr float Pi = 3.141592653589793f;
+    constexpr float TwoPi = Pi * 2.0f;
+    constexpr float HalfPi = Pi * 0.5f;
 
-	constexpr float ToRadian = Pi / 180.0f;
-	constexpr float ToDegree = 180.0f / Pi;
+    constexpr float ToRadian = Pi / 180.0f;
+    constexpr float ToDegree = 180.0f / Pi;
 
-	inline float Lerp(float s, float e, float t) {
-		return s + t * (e - s);
-	}
+    inline float Lerp(float s, float e, float t) {
+        return s + t * (e - s);
+    }
 }
 
 static const Vector2 Vector2Zero{ 0.0f,0.0f };
@@ -67,7 +67,8 @@ inline Vector3 Normalize(const Vector3& v);
 inline Vector3 Lerp(const Vector3& start, const Vector3& end, float t);
 inline Vector3 Project(const Vector3& v1, const Vector3& v2);
 
-
+Vector3 ToVector3(const Vector2& v);
+Vector2 ToVector2(const Vector3& v);
 
 inline Matrix4x4 operator+(const Matrix4x4& m1, const Matrix4x4& m2);
 inline Matrix4x4 operator-(const Matrix4x4& m1, const Matrix4x4& m2);
