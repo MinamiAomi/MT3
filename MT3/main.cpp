@@ -134,14 +134,14 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
             ImGui::DragFloat2("transform1.translate", &transform1.translate.x);
             ImGui::DragFloatDegree("transform1.rotate", &transform1.rotate.z);
-            ImGui::DragFloat2("transform1.scale", &transform1.scale.x);
+            ImGui::DragFloat2("transform1.scale", &transform1.scale.x, 0.1f);
             if (ImGui::Button("Regenerat1")) {
                 hull1.QuickHull(RandomPoints(100, 100, 10));
             }
 
             ImGui::DragFloat2("transform2.translate", &transform2.translate.x);
             ImGui::DragFloatDegree("transform2.rotate", &transform2.rotate.z);
-            ImGui::DragFloat2("transform2.scale", &transform2.scale.x);
+            ImGui::DragFloat2("transform2.scale", &transform2.scale.x, 0.1f);
             if (ImGui::Button("Regenerat2")) {
                 hull2.QuickHull(RandomPoints(100, 100, 10));
             }
