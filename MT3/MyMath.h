@@ -47,6 +47,7 @@ inline float Length(const Vector2& v);
 inline Vector2 Normalize(const Vector2& v);
 inline Vector2 Project(const Vector2& v1, const Vector2& v2);
 inline Vector2 Lerp(const Vector2& start, const Vector2& end, float t);
+inline Vector2 Perpendicular(const Vector2& direction);
 
 inline Vector3 operator+(const Vector3& v);
 inline Vector3 operator-(const Vector3& v);
@@ -112,5 +113,8 @@ Vector3 TransformNormal(const Vector3& v, const Matrix4x4& m);
 inline Vector3 operator*(const Vector3& v, const Matrix4x4& m);
 
 Vector3 CatmullRomSpline(const Vector3& controlPoint0, const Vector3& controlPoint1, const Vector3& controlPoint2, const Vector3& controlPoint3, float t);
+
+Vector2 Transform2D(const Vector2& v, const Matrix4x4& m);
+Matrix4x4 MakeAffineMatrix2D(const Vector2& scale, float rotate, const Vector2& translate);
 
 #include <MyMath_inline.h>

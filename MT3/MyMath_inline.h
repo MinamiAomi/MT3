@@ -65,6 +65,10 @@ inline Vector2 Lerp(const Vector2& start, const Vector2& end, float t) {
     return start + t * (end - start);
 }
 
+inline Vector2 Perpendicular(const Vector2& direction) {
+    return { -direction.y, direction.x };
+}
+
 inline Vector3 operator+(const Vector3& v) {
     return { +v.x, +v.y, +v.z };
 }

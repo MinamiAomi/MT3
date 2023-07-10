@@ -109,6 +109,7 @@
     <ClCompile Include="Collision.cpp" />
     <ClCompile Include="ConvexHull.cpp" />
     <ClCompile Include="Geometry.cpp" />
+    <ClCompile Include="GJK.cpp" />
     <ClCompile Include="PrintUtils.cpp" />
     <ClCompile Include="RenderingPipeline.cpp" />
     <ClCompile Include="main.cpp" />
@@ -144,6 +145,7 @@
     <ClInclude Include="Collision.h" />
     <ClInclude Include="ConvexHull.h" />
     <ClInclude Include="Geometry.h" />
+    <ClInclude Include="GJK.h" />
     <ClInclude Include="PrintUtils.h" />
     <ClInclude Include="ReneringPipeline.h" />
     <ClInclude Include="MyMath.h" />
