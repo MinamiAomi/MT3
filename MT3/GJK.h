@@ -41,3 +41,5 @@ private:
 bool NarrowPhaseAABB(const CollisionShape& collisionShape1, const CollisionShape& collisionShape2);
 bool GJK(const CollisionShape& collisionShape1, const CollisionShape& collisionShape2, Simplex* simplex);
 Vector2 EPA(const Simplex& simplex, const CollisionShape& collisionShape1, const CollisionShape& collisionShape2);
+
+bool CollisionTerrain(const std::vector<Vector2>& terrain, const Vector2& up, const CollisionShape& collisionShape, std::vector<size_t>& index);

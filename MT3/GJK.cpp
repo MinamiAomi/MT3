@@ -161,3 +161,30 @@ Vector2 EPA(const Simplex& simplex, const CollisionShape& collisionShape1, const
     }
     return closestEdge->normal * (closestEdge->distance + 0.01f);
 }
+
+bool CollisionTerrain(const std::vector<Vector2>& terrain, const Vector2& up, const CollisionShape& collisionShape, std::vector<size_t>& index) {
+
+    for (size_t i = 0; i < terrain.size() - 1; ++i) {
+        Vector2 s = terrain[i];
+        Vector2 e = terrain[i + 1];
+        
+        Vector2 se = e - s;
+        Vector2 es = s - e;
+
+        Vector2 n = Perpendicular(se);
+        Vector2 p0 = collisionShape.FindFurthestPoint(n) - s;
+        Vector2 p1 = collisionShape.FindFurthestPoint(-n) - s;
+        Vector2 p2 = collisionShape.FindFurthestPoint(se) - s;
+        Vector2 p3 = collisionShape.FindFurthestPoint(es) - e;
+
+        float dot = Dot(p0, p1);
+
+        if (dot <= 0.0f) {
+            index.emplace_back(i);
+        }
+
+
+    }
+    up;
+    return false;
+}

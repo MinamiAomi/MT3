@@ -113,6 +113,7 @@ public:
         }
         return *findPoint;
     }
+    const std::vector<Vector2>& GetVertices() const { return vertices_; }
 private:
     std::vector<Vector2> vertices_;
 };
@@ -165,8 +166,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 
     ConvexHull hull2;
-    //hull2.QuickHull(RandomPoints(100, 100, 10));
-    hull2.QuickHull({ {50,50},{50,-50},{-50,-50},{-50,50} });
+    hull2.QuickHull(RandomPoints(100, 100, 10));
     Transformation transform2{};
     transform2.translate = { 0.0f, 0.0f, 0.0f };
     transform2.rotate = { 0.0f, 0.0f, 0.0f };
@@ -178,7 +178,30 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
     unsigned int color0 = WHITE;
     unsigned int color1 = WHITE;
     unsigned int color2 = WHITE;
-    std::vector<Vector2> triangle = { {100,50},{-100,20},{50, -30} };
+
+    std::vector<Vector2> terrain = {
+        {-250.0f, 500.0f},
+        {-250, -130},
+        {-200, -120},
+        {-150, -140},
+        {-100, -110},
+        {-50, -100},
+        {   0, -120},
+        {  50, -130},
+        { 100, -150},
+        { 150, -120},
+        { 200, -110},
+        { 250, -150},
+        {250.0f, 500.0f},
+     {-250.0f, 500.0f}, };
+    std::vector<MeshCollider> tmc;
+    for (size_t i = 0; i < terrain.size() - 1; ++i) {
+        tmc.emplace_back(std::vector<Vector2>({ terrain[i], terrain[i + 1] }), MakeIdentityMatrix());
+    }
+
+    Vector2 vel1{};
+    Vector2 vel2{};
+    Vector2 vel3{};
 
     // ウィンドウの×ボタンが押されるまでループ
     while (Novice::ProcessMessage() == 0) {
@@ -220,15 +243,37 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
         scene.Update();
 
+        if (input->PushKey(DIK_SPACE)) {
+            auto rp = []() {
+                Vector2 v{};
+                v.x = Math::Lerp(10.0f, -10.0f, std::rand() / float(RAND_MAX));
+                v.y = Math::Lerp(10.0f, 20.0f, std::rand() / float(RAND_MAX));
+                return v;
+            };
+            vel1 = rp();
+            vel2 = rp();
+            vel3 = rp();
+        }
+
+        vel1 += -Vector2UnitY * 0.2f;
+        vel2 += -Vector2UnitY * 0.2f;
+        vel3 += -Vector2UnitY * 0.2f;
+        transform1.translate += ToVector3(vel1);
+        transform2.translate += ToVector3(vel2);
+        center += vel3;
+
         if (input->IsPressMouse(2)) {
             if (input->PushKey(DIK_1)) {
                 transform1.translate = ToVector3(scene.GetMouse());
+                vel1 = {};
             }
             else if (input->PushKey(DIK_2)) {
                 transform2.translate = ToVector3(scene.GetMouse());
+                vel2 = {};
             }
             else if (input->PushKey(DIK_3)) {
                 center = scene.GetMouse();
+                vel3 = {};
             }
         }
         transform1.world = MakeAffineMatrix(transform1.scale, transform1.rotate, transform1.translate);
@@ -254,6 +299,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
                 transform2.translate += ToVector3(bounce * 0.5f);
                 color0 = RED;
                 color1 = BLUE;
+                vel1 = Reflecte(vel1, Normalize(-bounce)) * 0.8f * 0.8f;
+                vel2 = Reflecte(vel2, Normalize(bounce)) * 0.8f * 0.8f;
             }
         }
         if (NarrowPhaseAABB(mc1, cc)) {
@@ -263,6 +310,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
                 center += bounce * 0.5f;
                 color0 = RED;
                 color2 = GREEN;
+                vel1 = Reflecte(vel1, Normalize(-bounce)) * 0.8f * 0.8f;
+                vel3 = Reflecte(vel3, Normalize(bounce)) * 0.8f * 0.8f;
             }
         }
         if (NarrowPhaseAABB(mc2, cc)) {
@@ -272,9 +321,58 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
                 center += bounce * 0.5f;
                 color1 = BLUE;
                 color2 = GREEN;
+                vel2 = Reflecte(vel2, Normalize(-bounce)) * 0.8f * 0.8f;
+                vel3 = Reflecte(vel3, Normalize(bounce)) * 0.8f * 0.8f;
             }
         }
 
+        Vector2 bou1{};
+        size_t hitCount1 = 0;
+        Vector2 bou2{};
+        size_t hitCount2 = 0;
+        Vector2 bou3{};
+        size_t hitCount3 = 0;
+        for (auto& t : tmc) {
+            if (NarrowPhaseAABB(mc1, t)) {
+                Simplex s;
+                if (GJK(mc1, t, &s)) {
+                    bou1 += EPA(s, mc1, t);
+                    hitCount1++;
+                    color0 = RED;
+                }
+            }
+            if (NarrowPhaseAABB(mc2, t)) {
+                Simplex s;
+                if (GJK(mc2, t, &s)) {
+                    bou2 += EPA(s, mc2, t);
+                    hitCount2++;
+                    color1 = BLUE;
+                }
+            }
+            if (NarrowPhaseAABB(cc, t)) {
+                Simplex s;
+                if (GJK(cc, t, &s)) {
+                    bou3 += EPA(s, cc, t);
+                    hitCount3++;
+                    color2 = GREEN;
+                }
+            }
+        }
+        if (hitCount1 > 0) {
+            Vector2 v = bou1 * -(1.0f / hitCount1);
+            transform1.translate += ToVector3(v);
+            vel1 = Reflecte(vel1, Normalize(v)) * 0.8f;
+        }
+        if (hitCount2 > 0) {
+            Vector2 v = bou2 * -(1.0f / hitCount2);
+            transform2.translate += ToVector3(v);
+            vel2 = Reflecte(vel2, Normalize(v)) * 0.8f;
+        }
+        if (hitCount3 > 0) {
+            Vector2 v = bou3 * -(1.0f / hitCount3);
+            center += v;
+            vel3 = Reflecte(vel3, Normalize(v)) * 0.8f;
+        }
 
         transform1.world = MakeAffineMatrix(transform1.scale, transform1.rotate, transform1.translate);
         transform2.world = MakeAffineMatrix(transform2.scale, transform2.rotate, transform2.translate);
@@ -294,10 +392,11 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
         DrawConvexHull(hull2, transform2.world, color1);
         scene.DrawCircle(center, radius, color2, true);
 
-        for (size_t i = 0; i < simplex0.size(); ++i) {
-            scene.DrawLine(simplex0[i], simplex0[(i + 1) % simplex0.size()], BLACK);
-        }
+        for (size_t i = 0; i < terrain.size() - 1; ++i) {
+            scene.DrawLine(terrain[i], terrain[i + 1], WHITE);
+            scene.DrawCircle(terrain[i], 3, WHITE, false);
 
+        }
 
         ///
         /// ↑描画処理ここまで

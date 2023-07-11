@@ -73,6 +73,10 @@ inline Vector2 TripleProduct(const Vector2& a, const Vector2& b, const Vector2& 
     return b * Dot(a, c) - a * Dot(b, c);
 }
 
+inline Vector2 Reflecte(const Vector2& direction, const Vector2& normal) {
+    return Dot(normal, -direction) * 2.0f * normal + direction;
+}
+
 inline Vector3 operator+(const Vector3& v) {
     return { +v.x, +v.y, +v.z };
 }

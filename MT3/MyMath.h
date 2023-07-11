@@ -49,6 +49,7 @@ inline Vector2 Project(const Vector2& v1, const Vector2& v2);
 inline Vector2 Lerp(const Vector2& start, const Vector2& end, float t);
 inline Vector2 Perpendicular(const Vector2& direction);
 inline Vector2 TripleProduct(const Vector2& a, const Vector2& b, const Vector2& c);
+inline Vector2 Reflecte(const Vector2& direction, const Vector2& normal);
 
 inline Vector3 operator+(const Vector3& v);
 inline Vector3 operator-(const Vector3& v);
