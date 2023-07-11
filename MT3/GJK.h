@@ -7,11 +7,18 @@
 
 #include "MyMath.h"
 
+struct AABB {
+    Vector2 min, max;
+};
+
 class CollisionShape {
 public:
     virtual ~CollisionShape() {}
     virtual Vector2 FindFurthestPoint(const Vector2& direction) const = 0;
-    virtual Vector2 ArbitraryPoint() const = 0;
+    
+    const AABB& GetAABB() const { return aabb_; }
+protected:
+    AABB aabb_{};
 };
 
 class Simplex {
@@ -31,4 +38,6 @@ private:
     uint32_t size_;
 };
 
-bool GJK(const CollisionShape& collisionShape1, const CollisionShape& collisionShape2, std::vector<std::pair<Vector2, Vector2>>& p, std::vector<std::pair<Vector2, Vector2>>& p1);
+bool NarrowPhaseAABB(const CollisionShape& collisionShape1, const CollisionShape& collisionShape2);
+bool GJK(const CollisionShape& collisionShape1, const CollisionShape& collisionShape2, Simplex* simplex);
+Vector2 EPA(const Simplex& simplex, const CollisionShape& collisionShape1, const CollisionShape& collisionShape2);

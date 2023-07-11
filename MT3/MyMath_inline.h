@@ -69,6 +69,10 @@ inline Vector2 Perpendicular(const Vector2& direction) {
     return { -direction.y, direction.x };
 }
 
+inline Vector2 TripleProduct(const Vector2& a, const Vector2& b, const Vector2& c) {
+    return b * Dot(a, c) - a * Dot(b, c);
+}
+
 inline Vector3 operator+(const Vector3& v) {
     return { +v.x, +v.y, +v.z };
 }
