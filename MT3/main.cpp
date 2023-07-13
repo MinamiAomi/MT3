@@ -6,6 +6,7 @@
 #include "ReneringPipeline.h"
 #include "Collision.h"
 #include "PrintUtils.h"
+#include "Physics.h"
 
 const char kWindowTitle[] = "LE2A_19_ミナミアオミ";
 const uint32_t kWindowWidth = 1280;
@@ -24,101 +25,63 @@ void MoveCamera(RenderingPipeline& renderingPipeline);
 
 Geometry::Ray MouseRay(const RenderingPipeline& renderingPipeline);
 
-class Object;
-
-struct PhysicsObject {
-    Vector3 position;
-    Vector3 velocity;
-    Vector3 acceleration;
-    float mass;
-
-    void AddForce(const Vector3& force) {
-        acceleration += force * (1.0f / mass);
-    }
-
-    void UpdatePosition(float deltaTime) {
-        velocity += acceleration * deltaTime;
-        position += velocity * deltaTime;
-        acceleration = Vector3Zero;
-    }
-};
-
-struct Spring {
-    bool active;
-    Vector3 anchor; // アンカー
-    float naturalLength; // 自然長
-    float stiffness; // 硬さ
-    float dempingCoefficient; // 減衰係数
-
-    bool Gui(const char* label) {
-        if (ImGui::TreeNodeEx(label, ImGuiTreeNodeFlags_DefaultOpen)) {
-            ImGui::Checkbox("Active", &active);
-            ImGui::DragFloat3("Anchor", &anchor.x, 0.01f);
-            ImGui::DragFloat("NaturalLength ", &naturalLength, 0.1f);
-            ImGui::DragFloat("Stiffness", &stiffness, 0.1f);
-            ImGui::DragFloat("DempingCoefficient", &dempingCoefficient, 0.1f);
-            ImGui::TreePop();
-            return true;
-        }
-        return false;
-    }
-};
-
 struct Ball : public PhysicsObject {
     float radius;
     uint32_t color;
 };
 
-Vector3 GravityForce(const PhysicsObject& o) {
-    const Vector3 gravityAcceleration = -Vector3UnitY * 9.8f;
-    return gravityAcceleration * o.mass;
-}
-
-Vector3 SpringForce(const PhysicsObject& o, const Spring& s) {
-    Vector3 difference = o.position - s.anchor;
-    float length = Length(difference);
-    if (length == 0.0f) {
-        return {};
-    }
-    Vector3 direction = difference * (1.0f / length);
-    Vector3 restPosition = s.anchor + direction * s.naturalLength;
-    // 変位ベクトル
-    Vector3 displacement = length * (o.position - restPosition);
-    // 復元力
-    Vector3 restoringForce = -s.stiffness * displacement;
-    // 減衰力
-    Vector3 dempingForce = -s.dempingCoefficient * o.velocity;
-    return restoringForce + dempingForce;
+Vector3 RandomPoint(const Vector3& min, const Vector3& max) {
+    Vector3 p{};
+    constexpr float r = 1.0f / RAND_MAX;
+    p.x = Math::Lerp(min.x, max.x, std::rand() * r);
+    p.y = Math::Lerp(min.y, max.y, std::rand() * r);
+    p.z = Math::Lerp(min.z, max.z, std::rand() * r);
+    return p;
 }
 
 // Windowsアプリでのエントリーポイント(main関数)
 int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
+    std::srand(static_cast<unsigned int>(std::time(nullptr)));
+
     // ライブラリの初期化
     Novice::Initialize(kWindowTitle, (int)kWindowWidth, (int)kWindowHeight);
     Input* input = Input::GetInstance();
 
+
     RenderingPipeline renderingPipeline{};
     renderingPipeline.Initalize(static_cast<float>(kWindowWidth), static_cast<float>(kWindowHeight));
 
-    Ball ball{};
-    ball.position = { 0.8f, 0.2f, 0.0f };
-    ball.mass = 2.0f;
-    ball.radius = 0.05f;
-    ball.color = BLUE;
+    const size_t kObjCount = 6;
+    const size_t kSpringCount = (kObjCount - 1);
 
+    Ball balls[kObjCount]{};
+    for (size_t i = 0; i < kObjCount; ++i) {
+        balls[i].position = RandomPoint({ -1,-1,-1 }, { 1,1,1 });
+    }
+    Spring springs[kObjCount][kSpringCount]{};
 
-    std::vector<Spring> springs(1);
-    springs[0].active = true;
-    springs[0].anchor = { 0.0f, 1.0f, 0.0f };
-    springs[0].naturalLength = 0.7f;
-    springs[0].stiffness = 100.0f;
-    springs[0].dempingCoefficient = 2.0f;
+    for (size_t i = 0; i < kObjCount; ++i) {
+        balls[i].mass = 2.0f;
+        balls[i].radius = 0.05f;
+        balls[i].color = BLUE;
+        size_t p = 0;
+        for (size_t j = 0; j < kSpringCount; ++j, ++p) {
+            if (i == j) { ++p; }
+            springs[i][j].anchor = balls[p].position;
+            springs[i][j].naturalLength = 0.7f;
+            springs[i][j].stiffness = 100.0f;
+            springs[i][j].damping = 2.0f;
+        }
+    }
+
 
     float deltaTime = 1.0f / 60.0f;
 
-    bool isDrag = false;
+    Ball* dragBall = nullptr;
     bool stop = true;
+
+    const Vector3 gravityAcceleration = -Vector3UnitY * 9.8f;
 
     // ウィンドウの×ボタンが押されるまでループ
     while (Novice::ProcessMessage() == 0) {
@@ -138,56 +101,51 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
             stop = stop ? !ImGui::Button("Start", { 50,0 }) : ImGui::Button("Stop", { 50,0 });
 
-            ImGui::DragFloat3("Ball position", &ball.position.x, 0.01f);
-            ImGui::DragFloat3("Ball velocity", &ball.velocity.x, 0.01f);
+          /*  for (size_t i = 0; i < 4; ++i) {
+                balls[i].ShowUI(("Ball" + std::to_string(i)).c_str());
+                for (size_t j = 0; j < 3; ++j) {
+                    springs[i][j].ShowUI(("Spring" + std::to_string(i) + std::to_string(j)).c_str());
+                }
+            }*/
 
-            if (ImGui::Button("Add Spring")) {
-                Spring s{};
-                s.active = true;
-                s.anchor = { 0.0f, 0.0f, 0.0f };
-                s.naturalLength = 1.0f;
-                s.stiffness = 100.0f;
-                s.dempingCoefficient = 2.0f;
-                springs.emplace_back(s);
-            }
-            for (auto& s : springs) {
-                size_t index = (&s) - (&springs[0]);
-                s.Gui(("Spring" + std::to_string(index)).c_str());
-            }
 
             ImGui::End();
         }
 
         if (!stop) {
-            // 重力を計算する
-            ball.AddForce(GravityForce(ball));
-
-            // すべてのばねの力を計算する
-            for (auto& s : springs) {
-                if (s.active) {
-                    ball.AddForce(SpringForce(ball, s));
+           
+            for (size_t i = 0; i < kObjCount; ++i) {
+                size_t p = 0;
+                for (size_t j = 0; j < kSpringCount; ++j, ++p) {
+                    if (i == j) { ++p; }
+                    springs[i][j].anchor = balls[p].position;
+                    balls[i].AddForce(springs[i][j].ComputeForce(balls[i]));
                 }
+                balls[i].AddForce(gravityAcceleration * balls[i].mass);
             }
-
-            ball.UpdatePosition(deltaTime);
+            for (size_t i = 0; i < kObjCount; ++i) {
+                balls[i].UpdatePosition(deltaTime);
+            }
         }
 
         // ドラッグ処理
         if (input->IsPressMouse(0)) {
-            if (!isDrag) {
+            if (!dragBall) {
                 auto ray = MouseRay(renderingPipeline);
-                if (Collision::IsCollision(Geometry::Sphere{ ball.position, ball.radius }, ray)) {
-                    isDrag = true;
+                for (size_t i = 0; i < kObjCount; ++i) {
+                    if (Collision::IsCollision(Geometry::Sphere{ balls[i].position, balls[i].radius }, ray)) {
+                        dragBall = &balls[i];
+                    }
                 }
             }
         }
-        else { isDrag = false; }
+        else { dragBall = nullptr; }
 
-        if (isDrag) {
+        if (dragBall) {
             auto ray = MouseRay(renderingPipeline);
-            float distance = Length(ball.position - ray.origin);
-            ball.position = ray.origin + Normalize(ray.diff) * distance;
-            ball.velocity = Vector3Zero;
+            float distance = Length(dragBall->position - ray.origin);
+            dragBall->position = ray.origin + Normalize(ray.diff) * distance;
+            dragBall->velocity = Vector3Zero;
         }
 
         ///
@@ -200,13 +158,16 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
         renderingPipeline.DrawGrid(4);
 
-        for (auto& s : springs) {
-            if (s.active) {
-                renderingPipeline.DrawLine(ball.position, s.anchor, WHITE);
-                renderingPipeline.DrawSphere({ s.anchor, 0.02f }, BLACK);
+
+
+        for (size_t i = 0; i < kObjCount; ++i) {
+            for (size_t j = 0; j < kSpringCount; ++j) {
+                renderingPipeline.DrawLine(balls[i].position, springs[i][j].anchor, WHITE);
             }
         }
-        renderingPipeline.DrawSphere({ ball.position,ball.radius }, !isDrag ? ball.color : RED);
+        for (size_t i = 0; i < kObjCount; ++i) {
+            renderingPipeline.DrawSphere({ balls[i].position,balls[i].radius }, dragBall != &balls[i] ? balls[i].color : RED);
+        }
 
         renderingPipeline.DrawAxis();
 

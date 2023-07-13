@@ -13,6 +13,10 @@ namespace Math {
 
 	constexpr float ToRadian = Pi / 180.0f;
 	constexpr float ToDegree = 180.0f / Pi;
+
+	inline float Lerp(float s, float e, float t) {
+		return s + t * (e - s);
+	}
 }
 
 static const Vector2 Vector2Zero{ 0.0f,0.0f };
