@@ -61,6 +61,10 @@ inline Vector2 Project(const Vector2& v1, const Vector2& v2) {
     return Dot(v1, normV2) * normV2;
 }
 
+inline Vector2 TripleProduct(const Vector2& a, const Vector2& b, const Vector2& c) {
+    return Dot(a, c) * b - Dot(a, b) * c;
+}
+
 inline Vector2 Lerp(const Vector2& start, const Vector2& end, float t) {
     return start + t * (end - start);
 }

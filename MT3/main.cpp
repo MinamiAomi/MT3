@@ -52,33 +52,14 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
     RenderingPipeline renderingPipeline{};
     renderingPipeline.Initalize(static_cast<float>(kWindowWidth), static_cast<float>(kWindowHeight));
 
-    const size_t kObjCount = 6;
-    const size_t kSpringCount = (kObjCount - 1);
 
-    Ball balls[kObjCount]{};
-    for (size_t i = 0; i < kObjCount; ++i) {
-        balls[i].position = RandomPoint({ -1,-1,-1 }, { 1,1,1 });
-    }
-    Spring springs[kObjCount][kSpringCount]{};
-
-    for (size_t i = 0; i < kObjCount; ++i) {
-        balls[i].mass = 2.0f;
-        balls[i].radius = 0.05f;
-        balls[i].color = BLUE;
-        size_t p = 0;
-        for (size_t j = 0; j < kSpringCount; ++j, ++p) {
-            if (i == j) { ++p; }
-            springs[i][j].anchor = balls[p].position;
-            springs[i][j].naturalLength = 0.7f;
-            springs[i][j].stiffness = 100.0f;
-            springs[i][j].damping = 2.0f;
-        }
-    }
+    Vector3 a = { 1.0f, 1.0f,0.0f };
+    Vector3 b = { 1.0f,0.0f,0.0f };
+  
 
 
-    float deltaTime = 1.0f / 60.0f;
+    //float deltaTime = 1.0f / 60.0f;
 
-    Ball* dragBall = nullptr;
     bool stop = true;
 
     const Vector3 gravityAcceleration = -Vector3UnitY * 9.8f;
@@ -101,52 +82,19 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
             stop = stop ? !ImGui::Button("Start", { 50,0 }) : ImGui::Button("Stop", { 50,0 });
 
-          /*  for (size_t i = 0; i < 4; ++i) {
-                balls[i].ShowUI(("Ball" + std::to_string(i)).c_str());
-                for (size_t j = 0; j < 3; ++j) {
-                    springs[i][j].ShowUI(("Spring" + std::to_string(i) + std::to_string(j)).c_str());
-                }
-            }*/
-
+            ImGui::DragFloat2("a", &a.x, 0.01f);
+            ImGui::DragFloat2("b", &b.x, 0.01f);
 
             ImGui::End();
         }
 
         if (!stop) {
            
-            for (size_t i = 0; i < kObjCount; ++i) {
-                size_t p = 0;
-                for (size_t j = 0; j < kSpringCount; ++j, ++p) {
-                    if (i == j) { ++p; }
-                    springs[i][j].anchor = balls[p].position;
-                    balls[i].AddForce(springs[i][j].ComputeForce(balls[i]));
-                }
-                balls[i].AddForce(gravityAcceleration * balls[i].mass);
-            }
-            for (size_t i = 0; i < kObjCount; ++i) {
-                balls[i].UpdatePosition(deltaTime);
-            }
+
         }
 
         // ドラッグ処理
-        if (input->IsPressMouse(0)) {
-            if (!dragBall) {
-                auto ray = MouseRay(renderingPipeline);
-                for (size_t i = 0; i < kObjCount; ++i) {
-                    if (Collision::IsCollision(Geometry::Sphere{ balls[i].position, balls[i].radius }, ray)) {
-                        dragBall = &balls[i];
-                    }
-                }
-            }
-        }
-        else { dragBall = nullptr; }
-
-        if (dragBall) {
-            auto ray = MouseRay(renderingPipeline);
-            float distance = Length(dragBall->position - ray.origin);
-            dragBall->position = ray.origin + Normalize(ray.diff) * distance;
-            dragBall->velocity = Vector3Zero;
-        }
+      
 
         ///
         /// ↑更新処理ここまで
@@ -158,16 +106,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
         renderingPipeline.DrawGrid(4);
 
-
-
-        for (size_t i = 0; i < kObjCount; ++i) {
-            for (size_t j = 0; j < kSpringCount; ++j) {
-                renderingPipeline.DrawLine(balls[i].position, springs[i][j].anchor, WHITE);
-            }
-        }
-        for (size_t i = 0; i < kObjCount; ++i) {
-            renderingPipeline.DrawSphere({ balls[i].position,balls[i].radius }, dragBall != &balls[i] ? balls[i].color : RED);
-        }
+        renderingPipeline.DrawLine(Vector3Zero, a, RED);
+        renderingPipeline.DrawLine(Vector3Zero, b, BLUE);
+        renderingPipeline.DrawLine(Vector3Zero, TripleProduct() , BLACK);
 
         renderingPipeline.DrawAxis();
 

@@ -52,3 +52,17 @@ bool Spring::ShowUI(const char* label) {
     }
     return false;
 }
+
+void Pendulm::UpdateAngle(float deltaTime, float gravityAcceleration) {
+    angulerAcceleration = -(gravityAcceleration / length) * std::sin(angle);
+    angulerVelocity += angulerAcceleration * deltaTime;
+    angle += angulerVelocity * deltaTime;
+}
+
+Vector3 Pendulm::ComputePosition() {
+    Vector3 point{};
+    point.x = anchor.x + std::sin(angle) * length;
+    point.y = anchor.x - std::cos(angle) * length;
+    point.z = anchor.z;
+    return point;
+}

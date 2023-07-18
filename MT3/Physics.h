@@ -26,3 +26,15 @@ public:
     float stiffness; // 硬さ
     float damping; // 減衰係数
 };
+
+class Pendulm {
+public:
+    void UpdateAngle(float deltaTime, float gravityAcceleration);
+    Vector3 ComputePosition();
+
+    Vector3 anchor;
+    float length;
+    float angle;
+    float angulerVelocity;
+    float angulerAcceleration;
+};
