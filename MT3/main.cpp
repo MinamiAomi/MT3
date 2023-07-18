@@ -118,33 +118,66 @@ private:
     std::vector<Vector2> vertices_;
 };
 
-class CircleCollider :
-    public CollisionShape {
-public:
 
-    CircleCollider(const Vector2& c, float r) : center_(c), radius_(r) {
-        aabb_.min = { center_.x - radius_, center_.y - radius_ };
-        aabb_.max = { center_.x + radius_, center_.y + radius_ };
-    }
-    Vector2 FindFurthestPoint(const Vector2& direction) const override {
-        return Normalize(direction) * radius_ + center_;
+
+struct TestObj {
+    ConvexHull hull;
+    std::vector<Vector2> points = RandomPoints(100.0f, 100.0f, 10);
+    Vector2 translate = { 0.0f,0.0f };
+    bool isDrawPoints = true;
+
+    Vector2 FindFurthestPoint(const Vector2& direction) const {
+        std::vector<Vector2>::const_iterator iter = hull.GetVertices().begin();
+        std::vector<Vector2>::const_iterator findPoint = iter;
+        float maxDistance = Dot(*iter++, direction);
+        for (; iter != hull.GetVertices().end(); ++iter) {
+            float d = Dot(*iter, direction);
+            if (d > maxDistance) {
+                maxDistance = d;
+                findPoint = iter;
+            }
+        }
+        return *findPoint + translate;
+
     }
 
-private:
-    Vector2 center_;
-    float radius_;
+    void Draw(unsigned int color) {
+        if (isDrawPoints) {
+            //  for (const auto& p : points) {
+            //      scene.DrawCircle(p + translate, 2, color, false);
+            //  }
+        }
+        std::vector<Vector2> vertices(hull.GetVertices().size());
+        for (size_t i = 0; i < vertices.size(); ++i) {
+            vertices[i] = hull.GetVertices()[i] + translate;
+            scene.DrawCircle(vertices[i], 2, color, false);
+        }
+        for (size_t i = 0; i < vertices.size(); ++i) {
+            scene.DrawLine(vertices[i], vertices[(i + 1) % vertices.size()], color);
+        }
+    }
+
 };
 
-
-
-void DrawConvexHull(const ConvexHull& hull, const Matrix4x4& worldMat, unsigned int color) {
-    std::vector<Vector2> vertices(hull.GetVertices().size());
-    for (size_t i = 0; i < vertices.size(); ++i) {
-        vertices[i] = ToVector2(ToVector3(hull.GetVertices()[i]) * worldMat);
+void MinDiff(const TestObj& o1, const TestObj& o2, TestObj& out) {
+    std::vector<Vector2> v1(o1.hull.GetVertices().size());
+    for (size_t i = 0; i < v1.size(); i++) {
+        v1[i] = o1.hull.GetVertices()[i] + o1.translate;
     }
-    for (size_t i = 0; i < vertices.size(); ++i) {
-        scene.DrawLine(vertices[i], vertices[(i + 1) % vertices.size()], color);
+    std::vector<Vector2> v2(o2.hull.GetVertices().size());
+    for (size_t i = 0; i < v2.size(); i++) {
+        v2[i] = o2.hull.GetVertices()[i] + o2.translate;
     }
+
+    out.points.resize(v1.size() * v2.size());
+    auto p = out.points.begin();
+    for (auto& p1 : v1) {
+        for (auto& p2 : v2) {
+            *p = p1 - p2;
+            ++p;
+        }
+    }
+    out.hull.QuickHull(out.points);
 }
 
 // Windowsアプリでのエントリーポイント(main関数)
@@ -156,52 +189,26 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
     Novice::Initialize(kWindowTitle, (int)kWindowWidth, (int)kWindowHeight);
     Input* input = Input::GetInstance();
 
-    ConvexHull hull1;
-    //hull1.QuickHull(RandomPoints(100, 100, 10));
-    hull1.QuickHull({ {50,50},{50,-50},{-50,-50},{-50,50} });
-    Transformation transform1{};
-    transform1.translate = { 100.0f, 50.0f, 0.0f };
-    transform1.rotate = { 0.0f, 0.0f, 0.0f };
-    transform1.scale = { 1.0f, 1.0f, 1.0f };
+    TestObj obj1;
+    obj1.hull.QuickHull(obj1.points);
+    obj1.translate = { 100.0f,50.0f };
 
 
-    ConvexHull hull2;
-    hull2.QuickHull(RandomPoints(100, 100, 10));
-    Transformation transform2{};
-    transform2.translate = { 0.0f, 0.0f, 0.0f };
-    transform2.rotate = { 0.0f, 0.0f, 0.0f };
-    transform2.scale = { 1.0f, 1.0f, 1.0f };
+    TestObj obj2;
+    obj2.hull.QuickHull(obj2.points);
+    obj2.translate = { -100.0f,-50.0f };
 
-    Vector2 center{};
-    float radius = 50.0f;
+    TestObj minDiff;
+    MinDiff(obj1, obj2, minDiff);
 
-    unsigned int color0 = WHITE;
-    unsigned int color1 = WHITE;
-    unsigned int color2 = WHITE;
+    bool edit = true;
+    bool start = false;
+    bool step = false;
 
-    std::vector<Vector2> terrain = {
-        {-250.0f, 500.0f},
-        {-250, -130},
-        {-200, -120},
-        {-150, -140},
-        {-100, -110},
-        {-50, -100},
-        {   0, -120},
-        {  50, -130},
-        { 100, -150},
-        { 150, -120},
-        { 200, -110},
-        { 250, -150},
-        {250.0f, 500.0f},
-     {-250.0f, 500.0f}, };
-    std::vector<MeshCollider> tmc;
-    for (size_t i = 0; i < terrain.size() - 1; ++i) {
-        tmc.emplace_back(std::vector<Vector2>({ terrain[i], terrain[i + 1] }), MakeIdentityMatrix());
-    }
+    std::vector<Vector2> simplex;
+    Vector2 direction{ 1,0 };
+    Vector2 support{ 0,0 };
 
-    Vector2 vel1{};
-    Vector2 vel2{};
-    Vector2 vel3{};
 
     // ウィンドウの×ボタンが押されるまでループ
     while (Novice::ProcessMessage() == 0) {
@@ -215,167 +222,64 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 
         {
-            auto& io = ImGui::GetIO();
             ImGui::SetNextWindowPos({ (float)kWindowWidth - 330.0f, 0.0f }, ImGuiCond_Once);
             ImGui::SetNextWindowSize({ 330.0f, 500.0f }, ImGuiCond_Once);
             ImGui::Begin("Window");
 
-            ImGui::Text("framerate %f", io.Framerate);
-            ImGui::DragFloat2("transform1.translate", &transform1.translate.x);
-            ImGui::DragFloatDegree("transform1.rotate", &transform1.rotate.z);
-            ImGui::DragFloat2("transform1.scale", &transform1.scale.x, 0.1f);
-            if (ImGui::Button("Regenerat1")) {
-                hull1.QuickHull(RandomPoints(100, 100, 10));
+            if (ImGui::Checkbox("Edit", &edit)) {
+                if (edit) {
+
+                }
+                else {
+                    start = false;
+                    step = false;
+                    direction = { 1,0 };
+                }
             }
 
-            ImGui::DragFloat2("transform2.translate", &transform2.translate.x);
-            ImGui::DragFloatDegree("transform2.rotate", &transform2.rotate.z);
-            ImGui::DragFloat2("transform2.scale", &transform2.scale.x, 0.1f);
-            if (ImGui::Button("Regenerat2")) {
-                hull2.QuickHull(RandomPoints(100, 100, 10));
+
+            if (edit) {
+                ImGui::DragFloat2("Obj1 translate", &obj1.translate.x);
+                if (ImGui::Button("Obj1 Regenerat")) {
+                    obj1.points = RandomPoints(100.0f, 100.0f, 10);
+                    obj1.hull.QuickHull(obj1.points);
+                }
+                ImGui::DragFloat2("Obj2 translate", &obj2.translate.x);
+                if (ImGui::Button("Obj2 Regenerat")) {
+                    obj2.points = RandomPoints(100.0f, 100.0f, 10);
+                    obj2.hull.QuickHull(obj2.points);
+                }
             }
-            ImGui::DragFloat2("circle center", &center.x);
-            ImGui::DragFloat("circle radius", &radius, 0.1f);
+            else {
+                if (start) {
+                    step = ImGui::Button("Step");
+                    ImGui::DragFloat2("Direction", &direction.x);
+
+                }
+                else {
+                    start = ImGui::Button("Start");
+                    if (start) {
+                        direction = { 1,0 };
+                        support = minDiff.FindFurthestPoint(direction);
+                        simplex.emplace_back(support);
+                        direction = -support;
+                    }
+                }
+            }
 
 
             ImGui::End();
         }
 
         scene.Update();
+        MinDiff(obj1, obj2, minDiff);
 
-        if (input->PushKey(DIK_SPACE)) {
-            auto rp = []() {
-                Vector2 v{};
-                v.x = Math::Lerp(10.0f, -10.0f, std::rand() / float(RAND_MAX));
-                v.y = Math::Lerp(10.0f, 20.0f, std::rand() / float(RAND_MAX));
-                return v;
-            };
-            vel1 = rp();
-            vel2 = rp();
-            vel3 = rp();
+        if (step) {
+          
+
+
         }
 
-        vel1 += -Vector2UnitY * 0.2f;
-        vel2 += -Vector2UnitY * 0.2f;
-        vel3 += -Vector2UnitY * 0.2f;
-        transform1.translate += ToVector3(vel1);
-        transform2.translate += ToVector3(vel2);
-        center += vel3;
-
-        if (input->IsPressMouse(2)) {
-            if (input->PushKey(DIK_1)) {
-                transform1.translate = ToVector3(scene.GetMouse());
-                vel1 = {};
-            }
-            else if (input->PushKey(DIK_2)) {
-                transform2.translate = ToVector3(scene.GetMouse());
-                vel2 = {};
-            }
-            else if (input->PushKey(DIK_3)) {
-                center = scene.GetMouse();
-                vel3 = {};
-            }
-        }
-        transform1.world = MakeAffineMatrix(transform1.scale, transform1.rotate, transform1.translate);
-        transform2.world = MakeAffineMatrix(transform2.scale, transform2.rotate, transform2.translate);
-
-
-        MeshCollider mc1(hull1.GetVertices(), transform1.world);
-        MeshCollider mc2(hull2.GetVertices(), transform2.world);
-        CircleCollider cc(center, radius);
-
-
-        Simplex simplex0;
-        Simplex simplex1;
-        Simplex simplex2;
-        color0 = WHITE;
-        color1 = WHITE;
-        color2 = WHITE;
-
-        if (NarrowPhaseAABB(mc1, mc2)) {
-            if (GJK(mc1, mc2, &simplex0)) {
-                Vector2 bounce = EPA(simplex0, mc1, mc2);
-                transform1.translate -= ToVector3(bounce * 0.5f);
-                transform2.translate += ToVector3(bounce * 0.5f);
-                color0 = RED;
-                color1 = BLUE;
-                vel1 = Reflecte(vel1, Normalize(-bounce)) * 0.8f * 0.8f;
-                vel2 = Reflecte(vel2, Normalize(bounce)) * 0.8f * 0.8f;
-            }
-        }
-        if (NarrowPhaseAABB(mc1, cc)) {
-            if (GJK(mc1, cc, &simplex1)) {
-                Vector2 bounce = EPA(simplex1, mc1, cc);
-                transform1.translate -= ToVector3(bounce * 0.5f);
-                center += bounce * 0.5f;
-                color0 = RED;
-                color2 = GREEN;
-                vel1 = Reflecte(vel1, Normalize(-bounce)) * 0.8f * 0.8f;
-                vel3 = Reflecte(vel3, Normalize(bounce)) * 0.8f * 0.8f;
-            }
-        }
-        if (NarrowPhaseAABB(mc2, cc)) {
-            if (GJK(mc2, cc, &simplex2)) {
-                Vector2 bounce = EPA(simplex2, mc2, cc);
-                transform2.translate -= ToVector3(bounce * 0.5f);
-                center += bounce * 0.5f;
-                color1 = BLUE;
-                color2 = GREEN;
-                vel2 = Reflecte(vel2, Normalize(-bounce)) * 0.8f * 0.8f;
-                vel3 = Reflecte(vel3, Normalize(bounce)) * 0.8f * 0.8f;
-            }
-        }
-
-        Vector2 bou1{};
-        size_t hitCount1 = 0;
-        Vector2 bou2{};
-        size_t hitCount2 = 0;
-        Vector2 bou3{};
-        size_t hitCount3 = 0;
-        for (auto& t : tmc) {
-            if (NarrowPhaseAABB(mc1, t)) {
-                Simplex s;
-                if (GJK(mc1, t, &s)) {
-                    bou1 += EPA(s, mc1, t);
-                    hitCount1++;
-                    color0 = RED;
-                }
-            }
-            if (NarrowPhaseAABB(mc2, t)) {
-                Simplex s;
-                if (GJK(mc2, t, &s)) {
-                    bou2 += EPA(s, mc2, t);
-                    hitCount2++;
-                    color1 = BLUE;
-                }
-            }
-            if (NarrowPhaseAABB(cc, t)) {
-                Simplex s;
-                if (GJK(cc, t, &s)) {
-                    bou3 += EPA(s, cc, t);
-                    hitCount3++;
-                    color2 = GREEN;
-                }
-            }
-        }
-        if (hitCount1 > 0) {
-            Vector2 v = bou1 * -(1.0f / hitCount1);
-            transform1.translate += ToVector3(v);
-            vel1 = Reflecte(vel1, Normalize(v)) * 0.8f;
-        }
-        if (hitCount2 > 0) {
-            Vector2 v = bou2 * -(1.0f / hitCount2);
-            transform2.translate += ToVector3(v);
-            vel2 = Reflecte(vel2, Normalize(v)) * 0.8f;
-        }
-        if (hitCount3 > 0) {
-            Vector2 v = bou3 * -(1.0f / hitCount3);
-            center += v;
-            vel3 = Reflecte(vel3, Normalize(v)) * 0.8f;
-        }
-
-        transform1.world = MakeAffineMatrix(transform1.scale, transform1.rotate, transform1.translate);
-        transform2.world = MakeAffineMatrix(transform2.scale, transform2.rotate, transform2.translate);
 
         ///
         /// ↑更新処理ここまで
@@ -387,16 +291,20 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
         scene.DrawArea();
 
-        //Novice::DrawEllipse(100, 100, 100, 100, 0.0f, color, kFillModeSolid);
-        DrawConvexHull(hull1, transform1.world, color0);
-        DrawConvexHull(hull2, transform2.world, color1);
-        scene.DrawCircle(center, radius, color2, true);
+        obj1.Draw(RED);
+        obj2.Draw(BLUE);
+        minDiff.Draw(0xFF00FFFF);
 
-        for (size_t i = 0; i < terrain.size() - 1; ++i) {
-            scene.DrawLine(terrain[i], terrain[i + 1], WHITE);
-            scene.DrawCircle(terrain[i], 3, WHITE, false);
-
+        if (!edit) {
+            if (simplex.size() == 0) {
+                scene.DrawLine({}, Normalize(direction) * 100, BLACK);
+            }
+            else {
+                scene.DrawLine(simplex[0], simplex[0] + Normalize(direction) * 100, BLACK);
+            }
+            scene.DrawCircle(support, 3, RED, false);
         }
+
 
         ///
         /// ↑描画処理ここまで
