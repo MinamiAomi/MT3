@@ -53,16 +53,27 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
     renderingPipeline.Initalize(static_cast<float>(kWindowWidth), static_cast<float>(kWindowHeight));
 
 
-    Vector3 a = { 1.0f, 1.0f,0.0f };
-    Vector3 b = { 1.0f,0.0f,0.0f };
-  
+    PhysicsObject obj{};
+    obj.position = { 0.8f,0.0f, 0.0f };
+    obj.mass = 1.0f;
 
+   /* Pendulm pendulm{};
+    pendulm.anchor = { 0.0f,0.0f,0.0f };
+    pendulm.length = 0.8f;
+    pendulm.angle = 90.0f * Math::ToRadian;
 
-    //float deltaTime = 1.0f / 60.0f;
+    obj.position = pendulm.ComputePosition();*/
+
+    float angulerVelocity = Math::Pi;
+    float angle = 0.0f;
+    float length = 0.8f;
+
+    float deltaTime = 1.0f / 60.0f;
 
     bool stop = true;
 
-    const Vector3 gravityAcceleration = -Vector3UnitY * 9.8f;
+    
+   // const float gravityAcceleration = 9.8f;
 
     // ウィンドウの×ボタンが押されるまでループ
     while (Novice::ProcessMessage() == 0) {
@@ -82,19 +93,22 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
             stop = stop ? !ImGui::Button("Start", { 50,0 }) : ImGui::Button("Stop", { 50,0 });
 
-            ImGui::DragFloat2("a", &a.x, 0.01f);
-            ImGui::DragFloat2("b", &b.x, 0.01f);
-
             ImGui::End();
         }
 
         if (!stop) {
-           
 
+           /* pendulm.UpdateAngle(deltaTime, gravityAcceleration);
+            obj.position = pendulm.ComputePosition();*/
+
+            angle += angulerVelocity * deltaTime;
+
+            obj.position.x = std::cos(angle) * length;
+            obj.position.y = std::sin(angle) * length;
         }
 
         // ドラッグ処理
-      
+
 
         ///
         /// ↑更新処理ここまで
@@ -105,11 +119,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
         ///
 
         renderingPipeline.DrawGrid(4);
-
-        renderingPipeline.DrawLine(Vector3Zero, a, RED);
-        renderingPipeline.DrawLine(Vector3Zero, b, BLUE);
-        renderingPipeline.DrawLine(Vector3Zero, TripleProduct() , BLACK);
-
+       /* renderingPipeline.DrawLine(obj.position, pendulm.anchor, WHITE);*/
+        renderingPipeline.DrawSphere({ obj.position, 0.05f }, BLACK);
         renderingPipeline.DrawAxis();
 
         ///
