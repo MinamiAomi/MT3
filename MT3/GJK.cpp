@@ -167,7 +167,7 @@ bool CollisionTerrain(const std::vector<Vector2>& terrain, const Vector2& up, co
     for (size_t i = 0; i < terrain.size() - 1; ++i) {
         Vector2 s = terrain[i];
         Vector2 e = terrain[i + 1];
-        
+
         Vector2 se = e - s;
         Vector2 es = s - e;
 
