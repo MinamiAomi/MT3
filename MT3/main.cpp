@@ -100,6 +100,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
             ImGui::DragFloat3("A", &a.x, 0.01f);
             ImGui::DragFloat3("B", &b.x, 0.01f);
             ImGui::DragFloat3("C", &c.x, 0.01f);
+            ImGui::DragFloat3("D", &d.x, 0.01f);
 
 
             ImGui::End();
@@ -138,22 +139,41 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
         renderingPipeline.DrawSphere({ a, 0.015f }, RED, 6);
         renderingPipeline.DrawSphere({ b, 0.015f }, GREEN, 6);
         renderingPipeline.DrawSphere({ c, 0.015f }, BLUE, 6);
-        Vector3 ab = b - a;
-        Vector3 ac = b - c;
-        Vector3 ao = -a;
-        Vector3 centroid = (a + b + c) * (1.0f / 3.0f);
-        Vector3 abc = Cross(ab, ac);
-        Vector3 x = Cross(Cross(ab, ao), ab);
-      /*  float dot = Dot(abc, ao);
-        if (dot < 0) {
-            abc = -abc;
-        }
-        else if (dot == 0.0f) {
+        renderingPipeline.DrawSphere({ d, 0.015f }, 0xFFFF00FF, 6);
+        renderingPipeline.DrawSphere({ {}, 0.015f }, BLACK, 6);
 
-            renderingPipeline.DrawLine(centroid, centroid + -Normalize(abc), RED);
-        }*/
-        renderingPipeline.DrawLine(centroid, centroid + Normalize(x), BLACK);
-        /*   renderingPipeline.DrawLine(centroid, centroid + -abc, WHITE);*/
+        Vector3 ab = b - a;
+        Vector3 ac = c - a;
+        Vector3 ad = d - a;
+        Vector3 ao = -a;
+
+        Vector3 abc = Cross(ab, ac);
+        Vector3 acd = Cross(ac, ad);
+        Vector3 adb = Cross(ad, ab);
+
+        Vector3 abcCenter = (a + b + c) * (1.0f / 3.0f);
+        Vector3 acdCenter = (a + c + d) * (1.0f / 3.0f);
+        Vector3 adbCenter = (a + d + b) * (1.0f / 3.0f);
+
+        unsigned int abcColor = WHITE;
+        unsigned int acdColor = WHITE;
+        unsigned int adbColor = WHITE;
+
+        float abcDot = Dot(abc, ao);
+        float acdDot = Dot(acd, ao);
+        float adbDot = Dot(adb, ao);
+
+        if (abcDot > 0) { abcColor = RED; }
+        if (acdDot > 0) { acdColor = RED; }
+        if (adbDot > 0) { adbColor = RED; }
+
+
+        renderingPipeline.DrawSegment({ a, ao }, BLACK);
+        renderingPipeline.DrawSegment({ abcCenter, abc }, abcColor);
+        renderingPipeline.DrawSegment({ acdCenter, acd }, acdColor);
+        renderingPipeline.DrawSegment({ adbCenter, adb }, adbColor);
+
+
 
 
 
