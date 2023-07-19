@@ -57,12 +57,12 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
     obj.position = { 0.8f,0.0f, 0.0f };
     obj.mass = 1.0f;
 
-   /* Pendulm pendulm{};
-    pendulm.anchor = { 0.0f,0.0f,0.0f };
-    pendulm.length = 0.8f;
-    pendulm.angle = 90.0f * Math::ToRadian;
+    /* Pendulm pendulm{};
+     pendulm.anchor = { 0.0f,0.0f,0.0f };
+     pendulm.length = 0.8f;
+     pendulm.angle = 90.0f * Math::ToRadian;
 
-    obj.position = pendulm.ComputePosition();*/
+     obj.position = pendulm.ComputePosition();*/
 
     float angulerVelocity = Math::Pi;
     float angle = 0.0f;
@@ -72,10 +72,14 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
     bool stop = true;
 
-    
-   // const float gravityAcceleration = 9.8f;
+    Vector3 a = { 1.0f,1.0f,0.0f };
+    Vector3 b = { -1.0f,0.0f,1.0f };
+    Vector3 c = { 0.0f,-1.0f,1.0f };
+    Vector3 d = { 0.0f,0.0f,-1.0f };
 
-    // ウィンドウの×ボタンが押されるまでループ
+    // const float gravityAcceleration = 9.8f;
+
+     // ウィンドウの×ボタンが押されるまでループ
     while (Novice::ProcessMessage() == 0) {
         // フレームの開始
         Novice::BeginFrame();
@@ -93,13 +97,18 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
             stop = stop ? !ImGui::Button("Start", { 50,0 }) : ImGui::Button("Stop", { 50,0 });
 
+            ImGui::DragFloat3("A", &a.x, 0.01f);
+            ImGui::DragFloat3("B", &b.x, 0.01f);
+            ImGui::DragFloat3("C", &c.x, 0.01f);
+
+
             ImGui::End();
         }
 
         if (!stop) {
 
-           /* pendulm.UpdateAngle(deltaTime, gravityAcceleration);
-            obj.position = pendulm.ComputePosition();*/
+            /* pendulm.UpdateAngle(deltaTime, gravityAcceleration);
+             obj.position = pendulm.ComputePosition();*/
 
             angle += angulerVelocity * deltaTime;
 
@@ -119,8 +128,35 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
         ///
 
         renderingPipeline.DrawGrid(4);
-       /* renderingPipeline.DrawLine(obj.position, pendulm.anchor, WHITE);*/
-        renderingPipeline.DrawSphere({ obj.position, 0.05f }, BLACK);
+        /* renderingPipeline.DrawLine(obj.position, pendulm.anchor, WHITE);*/
+        //renderingPipeline.DrawSphere({ obj.position, 0.05f }, BLACK);
+
+        renderingPipeline.DrawTriangle({ a,b,c }, WHITE);
+        renderingPipeline.DrawTriangle({ a,b,d }, WHITE);
+        renderingPipeline.DrawTriangle({ a,d,c }, WHITE);
+        renderingPipeline.DrawTriangle({ d,b,c }, WHITE);
+        renderingPipeline.DrawSphere({ a, 0.015f }, RED, 6);
+        renderingPipeline.DrawSphere({ b, 0.015f }, GREEN, 6);
+        renderingPipeline.DrawSphere({ c, 0.015f }, BLUE, 6);
+        Vector3 ab = b - a;
+        Vector3 ac = b - c;
+        Vector3 ao = -a;
+        Vector3 centroid = (a + b + c) * (1.0f / 3.0f);
+        Vector3 abc = Cross(ab, ac);
+        Vector3 x = Cross(Cross(ab, ao), ab);
+      /*  float dot = Dot(abc, ao);
+        if (dot < 0) {
+            abc = -abc;
+        }
+        else if (dot == 0.0f) {
+
+            renderingPipeline.DrawLine(centroid, centroid + -Normalize(abc), RED);
+        }*/
+        renderingPipeline.DrawLine(centroid, centroid + Normalize(x), BLACK);
+        /*   renderingPipeline.DrawLine(centroid, centroid + -abc, WHITE);*/
+
+
+
         renderingPipeline.DrawAxis();
 
         ///
