@@ -124,7 +124,7 @@ struct TestObj {
     ConvexHull hull;
     std::vector<Vector2> points = RandomPoints(100.0f, 100.0f, 10);
     Vector2 translate = { 0.0f,0.0f };
-    bool isDrawPoints = true;
+    bool isDrawPoints = false;
 
     Vector2 FindFurthestPoint(const Vector2& direction) const {
         std::vector<Vector2>::const_iterator iter = hull.GetVertices().begin();
@@ -138,14 +138,13 @@ struct TestObj {
             }
         }
         return *findPoint + translate;
-
     }
 
     void Draw(unsigned int color) {
         if (isDrawPoints) {
-            //  for (const auto& p : points) {
-            //      scene.DrawCircle(p + translate, 2, color, false);
-            //  }
+              for (const auto& p : points) {
+                  scene.DrawCircle(p + translate, 2, color, false);
+              }
         }
         std::vector<Vector2> vertices(hull.GetVertices().size());
         for (size_t i = 0; i < vertices.size(); ++i) {
@@ -191,12 +190,20 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
     TestObj obj1;
     obj1.hull.QuickHull(obj1.points);
-    obj1.translate = { 100.0f,50.0f };
+    obj1.translate = { 125.0f,125.0f };
 
 
     TestObj obj2;
     obj2.hull.QuickHull(obj2.points);
-    obj2.translate = { -100.0f,-50.0f };
+    obj2.translate = { -125.0f,125.0f };
+
+    TestObj obj3;
+    obj3.hull.QuickHull(obj3.points);
+    obj3.translate = { -125.0f,-125.0f };
+
+    TestObj obj4;
+    obj4.hull.QuickHull(obj4.points);
+    obj4.translate = { 125.0f,-125.0f };
 
     TestObj minDiff;
     MinDiff(obj1, obj2, minDiff);
@@ -241,13 +248,23 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
             if (edit) {
                 ImGui::DragFloat2("Obj1 translate", &obj1.translate.x);
                 if (ImGui::Button("Obj1 Regenerat")) {
-                    obj1.points = RandomPoints(100.0f, 100.0f, 10);
+                    obj1.points = RandomPoints(100.0f, 100.0f, 20);
                     obj1.hull.QuickHull(obj1.points);
                 }
                 ImGui::DragFloat2("Obj2 translate", &obj2.translate.x);
                 if (ImGui::Button("Obj2 Regenerat")) {
-                    obj2.points = RandomPoints(100.0f, 100.0f, 10);
+                    obj2.points = RandomPoints(100.0f, 100.0f, 20);
                     obj2.hull.QuickHull(obj2.points);
+                }
+                ImGui::DragFloat2("Obj3 translate", &obj3.translate.x);
+                if (ImGui::Button("Obj3 Regenerat")) {
+                    obj3.points = RandomPoints(100.0f, 100.0f, 20);
+                    obj3.hull.QuickHull(obj3.points);
+                }
+                ImGui::DragFloat2("Obj4 translate", &obj4.translate.x);
+                if (ImGui::Button("Obj4 Regenerat")) {
+                    obj4.points = RandomPoints(100.0f, 100.0f, 20);
+                    obj4.hull.QuickHull(obj4.points);
                 }
             }
             else {
@@ -293,7 +310,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
         obj1.Draw(RED);
         obj2.Draw(BLUE);
-        minDiff.Draw(0xFF00FFFF);
+        obj3.Draw(GREEN);
+        obj4.Draw(0xFFFF00FF);
+        //minDiff.Draw(0xFF00FFFF);
 
         if (!edit) {
             if (simplex.size() == 0) {
@@ -304,7 +323,14 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
             }
             scene.DrawCircle(support, 3, RED, false);
         }
+        Vector2 mouse = Normalize(scene.GetMouse()) * 50;
 
+        scene.DrawCircle(obj1.FindFurthestPoint(mouse), 3, BLACK, false);
+        scene.DrawCircle(obj2.FindFurthestPoint(mouse), 3, BLACK, false);
+        scene.DrawCircle(obj3.FindFurthestPoint(mouse), 3, BLACK, false);
+        scene.DrawCircle(obj4.FindFurthestPoint(mouse), 3, BLACK, false);
+        //scene.DrawCircle(minDiff.FindFurthestPoint(mouse), 3, BLACK, false);
+        scene.DrawLine({}, mouse * 2, BLACK);
 
         ///
         /// ↑描画処理ここまで
