@@ -55,15 +55,18 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
     RenderingPipeline renderingPipeline{};
     renderingPipeline.Initalize(static_cast<float>(kWindowWidth), static_cast<float>(kWindowHeight));
 
-    Vector3 center{};
+    PhysicsObject obj{};
+    obj.mass = 1.0f;
 
-    float angulerVelocity = Math::Pi;
-    float angle = 0.0f;
-    float length = 0.8f;
+    Pendulm pendulm{};
+    pendulm.anchor = { 0.0f,1.0f,0.0f };
+    pendulm.length = 0.8f;
+    pendulm.angle = 0.7f;
 
     float deltaTime = 1.0f / 60.0f;
 
     bool stop = true;
+    float gravityAcceleration = 9.8f;
 
      // ウィンドウの×ボタンが押されるまでループ
     while (Novice::ProcessMessage() == 0) {
@@ -83,18 +86,15 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
             stop = stop ? !ImGui::Button("Start", { 50,0 }) : ImGui::Button("Stop", { 50,0 });
 
-
+            obj.ShowUI("obj");
 
             ImGui::End();
         }
 
         if (!stop) {
 
-
-            angle += angulerVelocity * deltaTime;
-
-            center.x = std::cos(angle) * length;
-            center.y = std::sin(angle) * length;
+            pendulm.UpdateAngle(deltaTime, gravityAcceleration);
+            obj.position = pendulm.ComputePosition();
         }
 
         // ドラッグ処理
@@ -110,7 +110,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
         renderingPipeline.DrawGrid(4);
 
-        renderingPipeline.DrawSphere({ center, 0.05f }, WHITE);
+        renderingPipeline.DrawLine(pendulm.anchor, obj.position, WHITE);
+        renderingPipeline.DrawSphere({ obj.position, 0.05f }, WHITE);
 
         renderingPipeline.DrawAxis();
 

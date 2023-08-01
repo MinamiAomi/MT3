@@ -62,7 +62,7 @@ void Pendulm::UpdateAngle(float deltaTime, float gravityAcceleration) {
 Vector3 Pendulm::ComputePosition() {
     Vector3 point{};
     point.x = anchor.x + std::sin(angle) * length;
-    point.y = anchor.x - std::cos(angle) * length;
+    point.y = anchor.y - std::cos(angle) * length;
     point.z = anchor.z;
     return point;
 }
