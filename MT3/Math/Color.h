@@ -23,10 +23,13 @@ namespace Math {
 
         static Color HSVA(float h, float s, float v, float a = 1.0f);
         static Color RGBA(float r, float g, float b, float a = 1.0f);
+        static uint32_t Merge(uint32_t r, uint32_t g, uint32_t b, uint32_t a);
+        static uint32_t Convert(const Vector4& rgba);
+        static Vector4 Convert(uint32_t rgba);
 
         Color() : rgba_(Vector4::one) {}
         Color(float r, float g, float b, float a = 1.0f) : rgba_(r, g, b, a) {}
-        Color(uint32_t r, uint32_t g, uint32_t b, uint32_t a) : rgba_(Convert(Merge(r, g, b, a))) {}
+        Color(uint32_t r, uint32_t g, uint32_t b, uint32_t a = 0xFFu) : rgba_(Convert(Merge(r, g, b, a))) {}
         explicit Color(uint32_t rgba) : rgba_(Convert(rgba)) {}
 
         operator const Vector4& () noexcept { return rgba_; }
@@ -51,10 +54,6 @@ namespace Math {
         float GetA() const { return rgba_.w; }
 
     private:
-        uint32_t Merge(uint32_t r, uint32_t g, uint32_t b, uint32_t a);
-        uint32_t Convert(const Vector4& rgba);
-        Vector4 Convert(uint32_t rgba);
-
         Vector4 rgba_;
     };
 

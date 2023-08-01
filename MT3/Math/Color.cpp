@@ -57,26 +57,6 @@ namespace Math {
         return { r, g, b, a };
     }
 
-    void Color::SetR(uint32_t r) {
-        constexpr float reci = 1.0f / 255.0f;
-        rgba_.x = Clamp(float(r) * reci, 0.0f, 1.0f);
-    }
-
-    void Color::SetG(uint32_t g) {
-        constexpr float reci = 1.0f / 255.0f;
-        rgba_.y = Clamp(float(g) * reci, 0.0f, 1.0f);
-    }
-
-    void Color::SetB(uint32_t b) {
-        constexpr float reci = 1.0f / 255.0f;
-        rgba_.z = Clamp(float(b) * reci, 0.0f, 1.0f);
-    }
-
-    void Color::SetA(uint32_t a) {
-        constexpr float reci = 1.0f / 255.0f;
-        rgba_.w = Clamp(float(a) * reci, 0.0f, 1.0f);
-    }
-
     uint32_t Color::Merge(uint32_t r, uint32_t g, uint32_t b, uint32_t a) {
         return (r << 24u | g << 16u | b << 8u | a);
     }
@@ -100,6 +80,26 @@ namespace Math {
         result.z = Clamp(GetElement(1), 0.0f, 1.0f);
         result.w = Clamp(GetElement(0), 0.0f, 1.0f);
         return result;
+    }
+    
+    void Color::SetR(uint32_t r) {
+        constexpr float reci = 1.0f / 255.0f;
+        rgba_.x = Clamp(float(r) * reci, 0.0f, 1.0f);
+    }
+
+    void Color::SetG(uint32_t g) {
+        constexpr float reci = 1.0f / 255.0f;
+        rgba_.y = Clamp(float(g) * reci, 0.0f, 1.0f);
+    }
+
+    void Color::SetB(uint32_t b) {
+        constexpr float reci = 1.0f / 255.0f;
+        rgba_.z = Clamp(float(b) * reci, 0.0f, 1.0f);
+    }
+
+    void Color::SetA(uint32_t a) {
+        constexpr float reci = 1.0f / 255.0f;
+        rgba_.w = Clamp(float(a) * reci, 0.0f, 1.0f);
     }
 
 }
