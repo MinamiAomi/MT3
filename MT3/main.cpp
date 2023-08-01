@@ -56,12 +56,13 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
     renderingPipeline.Initalize(static_cast<float>(kWindowWidth), static_cast<float>(kWindowHeight));
 
     Ball ball{};
-    ball.mass = 1.0f;
+    ball.position = {0.8f,1.2f,0.3f};
+    ball.mass = 2.0f;
     ball.radius = 0.05f;
     ball.color = WHITE;
 
     Geometry::Plane plane{};
-    plane.normal = Vector3UnitY;
+    plane.normal = Normalize(Vector3{-0.2f,0.9f,-0.3f});
 
     float e = 0.8f;
 
