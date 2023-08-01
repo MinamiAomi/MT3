@@ -24,6 +24,10 @@ namespace Geometry {
         Vector3 origin; // 始点
         Vector3 diff;	// 終点への差分ベクトル
     };
+    struct Capsule {
+        Segment segment; // 線分
+        float radius;    // 半径
+    };
     // 平面
     struct Plane {
         Vector3 normal; // 法線
@@ -48,9 +52,12 @@ namespace Geometry {
     Plane MakePlaneFromPointAndNormal(const Vector3& point, const Vector3 normal);
     Plane MakePlaneFromTriangle(const Triangle& triangle);
 
+    float SignedDistance(const Vector3& point, const Plane& plane);
+
     Vector3 ClosestPoint(const Vector3& point, const Line& line);
     Vector3 ClosestPoint(const Vector3& point, const Ray& ray);
     Vector3 ClosestPoint(const Vector3& point, const Segment& segment);
+    Vector3 ClosestPoint(const Vector3& point, const Plane& plane);
     Vector3 ClosestPoint(const AABB& aabb, const Sphere& sphere);
     Vector3 ClosestPoint(const OBB& obb, const Sphere& sphere);
 

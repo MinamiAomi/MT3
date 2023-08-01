@@ -9,6 +9,7 @@ public:
 
     bool ShowUI(const char* label);
 
+    Vector3 prePosition;
     Vector3 position;
     Vector3 velocity;
     Vector3 acceleration;

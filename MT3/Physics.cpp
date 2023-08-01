@@ -7,6 +7,7 @@ void PhysicsObject::AddForce(const Vector3& force) {
 }
 
 void PhysicsObject::UpdatePosition(float deltaTime) {
+    prePosition = position;
     velocity += acceleration * deltaTime;
     position += velocity * deltaTime;
     acceleration = Vector3Zero;

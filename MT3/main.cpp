@@ -108,7 +108,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
             ball.AddForce(-gravityAcceleration * ball.mass * Vector3UnitY);
             ball.UpdatePosition(deltaTime);
 
-            if (Collision::IsCollision(Geometry::Sphere{ ball.position, ball.radius }, plane)) {
+            Geometry::Capsule capsule = { {ball.prePosition, ball.position - ball.prePosition}, ball.radius };
+            if (Collision::IsCollision(capsule, plane)) {
                 ball.velocity = Reflect(ball.velocity, plane.normal) * e;
             }
 

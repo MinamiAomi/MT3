@@ -7,6 +7,7 @@ namespace Collision {
     bool IsCollision(const Geometry::Sphere& sphere, const Geometry::Line& line);
     bool IsCollision(const Geometry::Sphere& sphere, const Geometry::Ray& ray);
     bool IsCollision(const Geometry::Sphere& sphere, const Geometry::Segment& segment);
+    bool IsCollision(const Geometry::Capsule& capsule, const Geometry::Plane& plane);
     bool IsCollision(const Geometry::Plane& plane, const Geometry::Line& line);
     bool IsCollision(const Geometry::Plane& plane, const Geometry::Ray& ray);
     bool IsCollision(const Geometry::Plane& plane, const Geometry::Segment& segment);

@@ -14,6 +14,10 @@ namespace Geometry {
         return MakePlaneFromPointAndNormal(triangle.vertices[0], normal);
     }
 
+    float SignedDistance(const Vector3& point, const Plane& plane) {
+        return Dot(plane.normal, point) - plane.distance;
+    }
+
     Vector3 ClosestPoint(const Vector3& point, const Line& line) {
         return line.origin + Project(point - line.origin, line.diff);
     }
@@ -33,6 +37,11 @@ namespace Geometry {
         dis = std::clamp(dis, 0.0f, segLen);
         Vector3 proj = dis * segDir;
         return segment.origin + proj;
+    }
+
+    Vector3 ClosestPoint(const Vector3& point, const Plane& plane) {
+        float d = Dot(plane.normal, point) - plane.distance;
+        return point - d * plane.normal;
     }
 
     Vector3 ClosestPoint(const AABB& aabb, const Sphere& sphere) {
