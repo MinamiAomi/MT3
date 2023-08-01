@@ -55,17 +55,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
     RenderingPipeline renderingPipeline{};
     renderingPipeline.Initalize(static_cast<float>(kWindowWidth), static_cast<float>(kWindowHeight));
 
-
-    PhysicsObject obj{};
-    obj.position = { 0.8f,0.0f, 0.0f };
-    obj.mass = 1.0f;
-
-    /* Pendulm pendulm{};
-     pendulm.anchor = { 0.0f,0.0f,0.0f };
-     pendulm.length = 0.8f;
-     pendulm.angle = 90.0f * Math::ToRadian;
-
-     obj.position = pendulm.ComputePosition();*/
+    Vector3 center{};
 
     float angulerVelocity = Math::Pi;
     float angle = 0.0f;
@@ -74,10 +64,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
     float deltaTime = 1.0f / 60.0f;
 
     bool stop = true;
-
-    Vector3 hsv{};
-
-    // const float gravityAcceleration = 9.8f;
 
      // ウィンドウの×ボタンが押されるまでループ
     while (Novice::ProcessMessage() == 0) {
@@ -97,7 +83,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
             stop = stop ? !ImGui::Button("Start", { 50,0 }) : ImGui::Button("Stop", { 50,0 });
 
-            ImGui::DragFloat3("HSV", &hsv.x, 0.01f, 0.0f, 1.0f);
 
 
             ImGui::End();
@@ -105,13 +90,11 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
         if (!stop) {
 
-            /* pendulm.UpdateAngle(deltaTime, gravityAcceleration);
-             obj.position = pendulm.ComputePosition();*/
 
             angle += angulerVelocity * deltaTime;
 
-            obj.position.x = std::cos(angle) * length;
-            obj.position.y = std::sin(angle) * length;
+            center.x = std::cos(angle) * length;
+            center.y = std::sin(angle) * length;
         }
 
         // ドラッグ処理
@@ -127,8 +110,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
         renderingPipeline.DrawGrid(4);
 
-        Novice::DrawBox(0, 0, 200, 200, 0.0f, Math::Color::HSVA(hsv.x, hsv.y, hsv.z), kFillModeSolid);
-
+        renderingPipeline.DrawSphere({ center, 0.05f }, WHITE);
 
         renderingPipeline.DrawAxis();
 

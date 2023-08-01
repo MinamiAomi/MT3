@@ -40,6 +40,9 @@
     <ClCompile Include="RenderingPipeline.cpp" />
     <ClCompile Include="Collision.cpp" />
     <ClCompile Include="PrintUtils.cpp" />
+    <ClCompile Include="Physics.cpp">
+      <Filter>KamataEngine</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="C:\KamataEngine\DirectXGame\audio\Audio.h">
@@ -118,5 +121,6 @@
     <ClInclude Include="ReneringPipeline.h" />
     <ClInclude Include="Collision.h" />
     <ClInclude Include="PrintUtils.h" />
+    <ClInclude Include="Physics.h" />
   </ItemGroup>
 </Project>
