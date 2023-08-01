@@ -139,6 +139,11 @@ inline Vector3 Project(const Vector3& v1, const Vector3& v2) {
     return Dot(v1, normV2) * normV2;
 }
 
+inline Vector3 Reflect(const Vector3& v, const Vector3& n) {
+    Vector3 norm = Normalize(n);
+    return v - 2.0f * Dot(v, norm) * norm;
+}
+
 inline Matrix4x4 operator+(const Matrix4x4& m1, const Matrix4x4& m2) {
     return {
         m1.m[0][0] + m2.m[0][0], m1.m[0][1] + m2.m[0][1], m1.m[0][2] + m2.m[0][2], m1.m[0][3] + m2.m[0][3],

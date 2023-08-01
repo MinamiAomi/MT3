@@ -67,7 +67,7 @@ inline float Length(const Vector3& v);
 inline Vector3 Normalize(const Vector3& v);
 inline Vector3 Lerp(const Vector3& start, const Vector3& end, float t);
 inline Vector3 Project(const Vector3& v1, const Vector3& v2);
-
+inline Vector3 Reflect(const Vector3& v, const Vector3& n);
 
 
 inline Matrix4x4 operator+(const Matrix4x4& m1, const Matrix4x4& m2);

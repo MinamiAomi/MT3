@@ -55,13 +55,15 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
     RenderingPipeline renderingPipeline{};
     renderingPipeline.Initalize(static_cast<float>(kWindowWidth), static_cast<float>(kWindowHeight));
 
-    PhysicsObject obj{};
-    obj.mass = 1.0f;
+    Ball ball{};
+    ball.mass = 1.0f;
+    ball.radius = 0.05f;
+    ball.color = WHITE;
 
-    ConicalPendulm pendulm{};
-    pendulm.anchor = { 0.0f,1.0f,0.0f };
-    pendulm.length = 0.8f;
-    pendulm.halfApexAngle = 0.7f;
+    Geometry::Plane plane{};
+    plane.normal = Vector3UnitY;
+
+    float e = 0.8f;
 
     float deltaTime = 1.0f / 60.0f;
 
@@ -86,15 +88,29 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
             stop = stop ? !ImGui::Button("Start", { 50,0 }) : ImGui::Button("Stop", { 50,0 });
 
-            obj.ShowUI("obj");
+            ball.ShowUI("Ball");
+
+            ImGui::DragFloat3("Plane normal", &plane.normal.x, 0.1f);
+            plane.normal = Normalize(plane.normal);
+            ImGui::DragFloat("Plane distance", &plane.distance, 0.1f);
+
+            if (ImGui::Button("Reset")) {
+                ball.position = Vector3Zero;
+                ball.velocity = Vector3Zero;
+            }
 
             ImGui::End();
         }
 
         if (!stop) {
 
-            pendulm.UpdateAngle(deltaTime, gravityAcceleration);
-            obj.position = pendulm.ComputePosition();
+            ball.AddForce(-gravityAcceleration * ball.mass * Vector3UnitY);
+            ball.UpdatePosition(deltaTime);
+
+            if (Collision::IsCollision(Geometry::Sphere{ ball.position, ball.radius }, plane)) {
+                ball.velocity = Reflect(ball.velocity, plane.normal) * e;
+            }
+
         }
 
         // ドラッグ処理
@@ -110,8 +126,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
         renderingPipeline.DrawGrid(4);
 
-        renderingPipeline.DrawLine(pendulm.anchor, obj.position, WHITE);
-        renderingPipeline.DrawSphere({ obj.position, 0.05f }, WHITE);
+        renderingPipeline.DrawSphere({ ball.position, ball.radius }, ball.color);
+        renderingPipeline.DrawPlane(plane, WHITE);
 
         renderingPipeline.DrawAxis();
 
