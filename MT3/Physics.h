@@ -36,5 +36,16 @@ public:
     float length;
     float angle;
     float angulerVelocity;
-    float angulerAcceleration;
+};
+
+class  ConicalPendulm {
+public:
+    void UpdateAngle(float deltaTime, float gravityAcceleration);
+    Vector3 ComputePosition();
+
+    Vector3 anchor;
+    float length;
+    float halfApexAngle;
+    float angle;
+    float angulerVelocity;
 };

@@ -58,17 +58,17 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
     PhysicsObject obj{};
     obj.mass = 1.0f;
 
-    Pendulm pendulm{};
+    ConicalPendulm pendulm{};
     pendulm.anchor = { 0.0f,1.0f,0.0f };
     pendulm.length = 0.8f;
-    pendulm.angle = 0.7f;
+    pendulm.halfApexAngle = 0.7f;
 
     float deltaTime = 1.0f / 60.0f;
 
     bool stop = true;
     float gravityAcceleration = 9.8f;
 
-     // ウィンドウの×ボタンが押されるまでループ
+    // ウィンドウの×ボタンが押されるまでループ
     while (Novice::ProcessMessage() == 0) {
         // フレームの開始
         Novice::BeginFrame();
