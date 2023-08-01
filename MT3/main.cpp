@@ -1,3 +1,4 @@
+#define NOMINMAX
 #include <Novice.h>
 #include <Input.h>
 #include <cstdint>
@@ -7,6 +8,8 @@
 #include "Collision.h"
 #include "PrintUtils.h"
 #include "Physics.h"
+
+#include "Math/Utils.h"
 
 const char kWindowTitle[] = "LE2A_19_ミナミアオミ";
 const uint32_t kWindowWidth = 1280;
@@ -72,10 +75,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
     bool stop = true;
 
-    Vector3 a = { 1.0f,1.0f,0.0f };
-    Vector3 b = { -1.0f,0.0f,1.0f };
-    Vector3 c = { 0.0f,-1.0f,1.0f };
-    Vector3 d = { 0.0f,0.0f,-1.0f };
+    Vector3 hsv{};
 
     // const float gravityAcceleration = 9.8f;
 
@@ -97,10 +97,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
             stop = stop ? !ImGui::Button("Start", { 50,0 }) : ImGui::Button("Stop", { 50,0 });
 
-            ImGui::DragFloat3("A", &a.x, 0.01f);
-            ImGui::DragFloat3("B", &b.x, 0.01f);
-            ImGui::DragFloat3("C", &c.x, 0.01f);
-            ImGui::DragFloat3("D", &d.x, 0.01f);
+            ImGui::DragFloat3("HSV", &hsv.x, 0.01f, 0.0f, 1.0f);
 
 
             ImGui::End();
@@ -129,52 +126,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
         ///
 
         renderingPipeline.DrawGrid(4);
-        /* renderingPipeline.DrawLine(obj.position, pendulm.anchor, WHITE);*/
-        //renderingPipeline.DrawSphere({ obj.position, 0.05f }, BLACK);
 
-        renderingPipeline.DrawTriangle({ a,b,c }, WHITE);
-        renderingPipeline.DrawTriangle({ a,b,d }, WHITE);
-        renderingPipeline.DrawTriangle({ a,d,c }, WHITE);
-        renderingPipeline.DrawTriangle({ d,b,c }, WHITE);
-        renderingPipeline.DrawSphere({ a, 0.015f }, RED, 6);
-        renderingPipeline.DrawSphere({ b, 0.015f }, GREEN, 6);
-        renderingPipeline.DrawSphere({ c, 0.015f }, BLUE, 6);
-        renderingPipeline.DrawSphere({ d, 0.015f }, 0xFFFF00FF, 6);
-        renderingPipeline.DrawSphere({ {}, 0.015f }, BLACK, 6);
-
-        Vector3 ab = b - a;
-        Vector3 ac = c - a;
-        Vector3 ad = d - a;
-        Vector3 ao = -a;
-
-        Vector3 abc = Cross(ab, ac);
-        Vector3 acd = Cross(ac, ad);
-        Vector3 adb = Cross(ad, ab);
-
-        Vector3 abcCenter = (a + b + c) * (1.0f / 3.0f);
-        Vector3 acdCenter = (a + c + d) * (1.0f / 3.0f);
-        Vector3 adbCenter = (a + d + b) * (1.0f / 3.0f);
-
-        unsigned int abcColor = WHITE;
-        unsigned int acdColor = WHITE;
-        unsigned int adbColor = WHITE;
-
-        float abcDot = Dot(abc, ao);
-        float acdDot = Dot(acd, ao);
-        float adbDot = Dot(adb, ao);
-
-        if (abcDot > 0) { abcColor = RED; }
-        if (acdDot > 0) { acdColor = RED; }
-        if (adbDot > 0) { adbColor = RED; }
-
-
-        renderingPipeline.DrawSegment({ a, ao }, BLACK);
-        renderingPipeline.DrawSegment({ abcCenter, abc }, abcColor);
-        renderingPipeline.DrawSegment({ acdCenter, acd }, acdColor);
-        renderingPipeline.DrawSegment({ adbCenter, adb }, adbColor);
-
-
-
+        Novice::DrawBox(0, 0, 200, 200, 0.0f, Math::Color::HSVA(hsv.x, hsv.y, hsv.z), kFillModeSolid);
 
 
         renderingPipeline.DrawAxis();
