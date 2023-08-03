@@ -11,7 +11,7 @@ namespace Collision {
     }
 
     bool IsCollision(const Sphere& sphere, const Plane& plane) {
-        return std::abs(SignedDistance(sphere.center, plane)) <= sphere.radius;
+        return std::abs(SignedDistanceToPlane(sphere.center, plane)) <= sphere.radius;
     }
 
     bool IsCollision(const Geometry::Sphere& sphere, const Geometry::Line& line) {
@@ -32,12 +32,12 @@ namespace Collision {
     bool IsCollision(const Geometry::Capsule& capsule, const Geometry::Plane& plane) {
         float DdotN = Dot(capsule.segment.diff, plane.normal);
         if (DdotN == 0.0f) {
-            return std::abs(SignedDistance(capsule.segment.origin, plane)) <= capsule.radius;
+            return std::abs(SignedDistanceToPlane(capsule.segment.origin, plane)) <= capsule.radius;
         }
         float t = (plane.distance - Dot(capsule.segment.origin, plane.normal)) / DdotN;
         t = std::clamp(t, 0.0f, 1.0f);
         Vector3 closestPoint = capsule.segment.origin + capsule.segment.diff * t;
-        return std::abs(SignedDistance(closestPoint, plane)) <= capsule.radius * capsule.radius;
+        return std::abs(SignedDistanceToPlane(closestPoint, plane)) <= capsule.radius * capsule.radius;
     }
 
     bool IsCollision(const Plane& plane, const Line& line) {

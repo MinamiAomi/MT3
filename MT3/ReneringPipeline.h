@@ -38,6 +38,7 @@ public:
     // Draw Geometry
 
     void DrawSphere(const Geometry::Sphere& sphere, uint32_t color, uint32_t subdivision = 12);
+    void DrawCapsule(const Geometry::Capsule& capsule, uint32_t color);
     void DrawLine(const Geometry::Line& line, uint32_t color);
     void DrawRay(const Geometry::Ray& ray, uint32_t color);
     void DrawSegment(const Geometry::Segment& segment, uint32_t color);

@@ -14,7 +14,7 @@ namespace Geometry {
         return MakePlaneFromPointAndNormal(triangle.vertices[0], normal);
     }
 
-    float SignedDistance(const Vector3& point, const Plane& plane) {
+    float SignedDistanceToPlane(const Vector3& point, const Plane& plane) {
         return Dot(plane.normal, point) - plane.distance;
     }
 

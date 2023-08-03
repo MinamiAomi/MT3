@@ -104,7 +104,7 @@ void RenderingPipeline::DrawSphere(const Sphere& sphere, uint32_t color, uint32_
     const float kLatEvery = Math::Pi / subdivision;
     const float kLonEvery = Math::TwoPi / subdivision;
 
-    Matrix4x4 worldMatrix = MakeAffineMatrix({ sphere.radius, sphere.radius,sphere.radius }, { 0.0f,0.0f,0.0f }, sphere.center);
+    //Matrix4x4 worldMatrix = MakeAffineMatrix({ sphere.radius, sphere.radius,sphere.radius }, { 0.0f,0.0f,0.0f }, sphere.center);
 
     // θとΦから頂点座標を計算
     auto CalcVertex = [&](float theta, float phi) {
@@ -131,6 +131,69 @@ void RenderingPipeline::DrawSphere(const Sphere& sphere, uint32_t color, uint32_
             ScreenDrawLine(a, c, color);
         }
     }
+}
+
+void RenderingPipeline::DrawCapsule(const Geometry::Capsule& capsule, uint32_t color) {
+    // 半球部の球分割数
+    const uint32_t kLatDiv = 7;
+    const uint32_t kLonDiv = 4;
+    const float kLatEvery = Math::HalfPi / kLatDiv;
+    const float kLonEvery = Math::TwoPi / kLonDiv;
+
+    Matrix4x4 rotateMatrix = MakeIdentityMatrix();
+    if (std::abs(Dot(Normalize(capsule.segment.diff), Vector3UnitZ)) < 1.0f - 0.0001f) {
+        Vector3 y = -Normalize(capsule.segment.diff);
+        Vector3 x = Normalize(Cross(-Vector3UnitZ, y));
+        Vector3 z = -Cross(y, x);
+        SetXAxis(rotateMatrix, x);
+        SetYAxis(rotateMatrix, y);
+        SetZAxis(rotateMatrix, z);
+    }
+    else {
+        rotateMatrix = MakeRotateXMatrix(90.0f * Math::ToRadian);
+    }
+
+    Vector3 center = capsule.segment.origin + capsule.segment.diff * 0.5f;
+    Vector3 direction = (capsule.segment.diff != Vector3Zero) ? Normalize(capsule.segment.diff) : Vector3Zero;
+    float cylinderHalfHeight = Length(capsule.segment.diff) * 0.5f;
+    Vector3 upOffset = direction * -cylinderHalfHeight + center;
+    Vector3 downOffset = direction * cylinderHalfHeight + center;
+
+    // θとΦから頂点座標を計算
+    auto CalcVertex = [&](float theta, float phi) {
+        Vector3 v{};
+        v.x = std::cos(theta) * std::cos(phi);
+        v.y = std::sin(theta);
+        v.z = std::cos(theta) * std::sin(phi);
+        v *= capsule.radius;
+        v = v * rotateMatrix;
+        return v;
+    };
+
+    for (uint32_t lonIndex = 0; lonIndex < kLonDiv; ++lonIndex) {
+        float lon = lonIndex * kLonEvery;
+        for (uint32_t latIndex = 0; latIndex < kLatDiv; ++latIndex) {
+            float latUp = Math::HalfPi - latIndex * kLatEvery;
+            float latDown = -Math::HalfPi + latIndex * kLatEvery;
+
+            Vector3 a = CalcVertex(latUp, lon) + upOffset;
+            Vector3 b = CalcVertex(latUp - kLatEvery, lon) + upOffset;
+            a = Apply(a);
+            b = Apply(b);
+
+            Vector3 c = CalcVertex(latDown, lon) + downOffset;
+            Vector3 d = CalcVertex(latDown + kLatEvery, lon) + downOffset;
+            c = Apply(c);
+            d = Apply(d);
+
+            ScreenDrawLine(a, b, color);
+            ScreenDrawLine(c, d, color);
+        }
+
+        Vector3 p = CalcVertex(0.0f, lon);
+        DrawLine(p + upOffset, p + downOffset, color);
+    }
+    
 }
 
 void RenderingPipeline::DrawLine(const Line& line, uint32_t color) {

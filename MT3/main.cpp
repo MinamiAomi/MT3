@@ -42,6 +42,7 @@ Vector3 RandomPoint(const Vector3& min, const Vector3& max) {
     return p;
 }
 
+
 // Windowsアプリでのエントリーポイント(main関数)
 int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
@@ -56,15 +57,18 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
     renderingPipeline.Initalize(static_cast<float>(kWindowWidth), static_cast<float>(kWindowHeight));
 
     Ball ball{};
-    ball.position = {0.8f,1.2f,0.3f};
-    ball.mass = 2.0f;
+    ball.position = { 0.8f,1.2f,0.3f };
+    ball.velocity = {0.0f,0.0f,0.0f};
+    ball.mass = 1.0f;
     ball.radius = 0.05f;
     ball.color = WHITE;
 
     Geometry::Plane plane{};
-    plane.normal = Normalize(Vector3{-0.2f,0.9f,-0.3f});
+    plane.normal = Normalize(Vector3{ -0.2f,0.9f,-0.3f });
 
-    float e = 0.8f;
+
+
+    float e = 0.5f;
 
     float deltaTime = 1.0f / 60.0f;
 
@@ -89,15 +93,20 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
             stop = stop ? !ImGui::Button("Start", { 50,0 }) : ImGui::Button("Stop", { 50,0 });
 
-            ball.ShowUI("Ball");
-
-            ImGui::DragFloat3("Plane normal", &plane.normal.x, 0.1f);
-            plane.normal = Normalize(plane.normal);
-            ImGui::DragFloat("Plane distance", &plane.distance, 0.1f);
+            ImGui::SameLine();
 
             if (ImGui::Button("Reset")) {
-                ball.position = Vector3Zero;
-                ball.velocity = Vector3Zero;
+                ball.position = { 0.8f,1.2f,0.3f };
+                ball.velocity = {};
+            }
+
+            ball.ShowUI("Ball");
+
+            if (ImGui::TreeNode("Plane")) {
+                ImGui::DragFloat3("Normal", &plane.normal.x, 0.1f);
+                plane.normal = Normalize(plane.normal);
+                ImGui::DragFloat("Distance", &plane.distance, 0.1f);
+                ImGui::TreePop();
             }
 
             ImGui::End();
@@ -109,9 +118,22 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
             ball.UpdatePosition(deltaTime);
 
             Geometry::Capsule capsule = { {ball.prePosition, ball.position - ball.prePosition}, ball.radius };
-            if (Collision::IsCollision(capsule, plane)) {
+            // 平面に最も近いカプセルの線分
+            Geometry::Segment closestSegment = { capsule.segment.origin - plane.normal * capsule.radius, capsule.segment.diff };
+
+            Vector3 intersectPoint{};
+            if (Geometry::Intersection(plane, closestSegment, intersectPoint)) {
+                ball.position = intersectPoint + plane.normal * (capsule.radius + 0.0001f);
                 ball.velocity = Reflect(ball.velocity, plane.normal) * e;
             }
+
+
+           /* Geometry::Sphere sphere{ball.position, ball.radius};
+            if (Collision::IsCollision(sphere, plane)) {
+            
+            
+                ball.velocity = Reflect(ball.velocity, plane.normal) * e;
+            }*/
 
         }
 
@@ -130,6 +152,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
         renderingPipeline.DrawSphere({ ball.position, ball.radius }, ball.color);
         renderingPipeline.DrawPlane(plane, WHITE);
+
 
         renderingPipeline.DrawAxis();
 

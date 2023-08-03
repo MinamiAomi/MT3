@@ -52,7 +52,7 @@ namespace Geometry {
     Plane MakePlaneFromPointAndNormal(const Vector3& point, const Vector3 normal);
     Plane MakePlaneFromTriangle(const Triangle& triangle);
 
-    float SignedDistance(const Vector3& point, const Plane& plane);
+    float SignedDistanceToPlane(const Vector3& point, const Plane& plane);
 
     Vector3 ClosestPoint(const Vector3& point, const Line& line);
     Vector3 ClosestPoint(const Vector3& point, const Ray& ray);
