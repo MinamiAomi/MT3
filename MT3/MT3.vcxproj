@@ -109,6 +109,7 @@
     <ClCompile Include="Collision.cpp" />
     <ClCompile Include="Geometry.cpp" />
     <ClCompile Include="Math\Color.cpp" />
+    <ClCompile Include="Math\Vector2.cpp" />
     <ClCompile Include="Math\Vector4.cpp" />
     <ClCompile Include="Physics.cpp" />
     <ClCompile Include="PrintUtils.cpp" />

@@ -34,11 +34,11 @@ struct Ball : public PhysicsObject {
 };
 
 Vector3 RandomPoint(const Vector3& min, const Vector3& max) {
-    Vector3 p{};
-    constexpr float r = 1.0f / RAND_MAX;
+    Vector3 p{}; min, max;
+   /* constexpr float r = 1.0f / RAND_MAX;
     p.x = Math::Lerp(min.x, max.x, std::rand() * r);
     p.y = Math::Lerp(min.y, max.y, std::rand() * r);
-    p.z = Math::Lerp(min.z, max.z, std::rand() * r);
+    p.z = Math::Lerp(min.z, max.z, std::rand() * r);*/
     return p;
 }
 

@@ -25,11 +25,13 @@ namespace Math {
     constexpr float FloatMax = std::numeric_limits<float>::max();
     constexpr float FloatMin = std::numeric_limits<float>::min();
 
- /*   constexpr float Pi = 3.141592653589793f;
-    constexpr float TwoPi = Pi * 2.0f;
-    constexpr float HalfPi = Pi * 0.5f;
-    constexpr float ToRad = Pi / 180.0f;
-    constexpr float ToDeg = 180.0f / Pi;*/
+    constexpr float Epsilon = 0.00001f;
+
+    /*   constexpr float Pi = 3.141592653589793f;
+       constexpr float TwoPi = Pi * 2.0f;
+       constexpr float HalfPi = Pi * 0.5f;
+       constexpr float ToRad = Pi / 180.0f;
+       constexpr float ToDeg = 180.0f / Pi;*/
 
 #define CREATE_MATH_COMPARE(Type) \
     constexpr inline Type Min(Type lhs, Type rhs) noexcept { return lhs < rhs ? lhs : rhs; }\
@@ -37,29 +39,29 @@ namespace Math {
     constexpr inline Type Clamp(Type val, Type min, Type max) noexcept { return Min(Max(val, min), max); }
 
     CREATE_MATH_COMPARE(float)
-    CREATE_MATH_COMPARE(int8_t)
-    CREATE_MATH_COMPARE(int16_t)
-    CREATE_MATH_COMPARE(int32_t)
-    CREATE_MATH_COMPARE(int64_t)
-    CREATE_MATH_COMPARE(uint8_t)
-    CREATE_MATH_COMPARE(uint16_t)
-    CREATE_MATH_COMPARE(uint32_t)
-    CREATE_MATH_COMPARE(uint64_t)
+        CREATE_MATH_COMPARE(int8_t)
+        CREATE_MATH_COMPARE(int16_t)
+        CREATE_MATH_COMPARE(int32_t)
+        CREATE_MATH_COMPARE(int64_t)
+        CREATE_MATH_COMPARE(uint8_t)
+        CREATE_MATH_COMPARE(uint16_t)
+        CREATE_MATH_COMPARE(uint32_t)
+        CREATE_MATH_COMPARE(uint64_t)
 
 #undef CREATE_MATH_COMPARE
 
 #define CREATE_MATH_ABS(Type)\
     constexpr inline Type Abs(Type x) noexcept { return x < 0 ? -x : x; }
 
-    CREATE_MATH_ABS(float)
-    CREATE_MATH_ABS(int8_t)
-    CREATE_MATH_ABS(int16_t)
-    CREATE_MATH_ABS(int32_t)
-    CREATE_MATH_ABS(int64_t)
+        CREATE_MATH_ABS(float)
+        CREATE_MATH_ABS(int8_t)
+        CREATE_MATH_ABS(int16_t)
+        CREATE_MATH_ABS(int32_t)
+        CREATE_MATH_ABS(int64_t)
 
 #undef CREATE_MATH_ABS
 
-   // constexpr inline float Lerp(float t, float s, float e) noexcept { return s + t * (e - s); }
+    constexpr inline float Lerp(float t, float s, float e) noexcept { return s + t * (e - s); }
     inline float Pow(float x, float y) noexcept { return std::pow(x, y); }
     inline float Sqrt(float x) noexcept { return std::sqrt(x); }
     inline float Sin(float x) noexcept { return std::sin(x); }
