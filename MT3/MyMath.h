@@ -88,6 +88,7 @@ inline Matrix4x4 MakeRotateXMatrix(float rad);
 inline Matrix4x4 MakeRotateYMatrix(float rad);
 inline Matrix4x4 MakeRotateZMatrix(float rad);
 inline Matrix4x4 MakeRotateXYZMatrix(const Vector3& rotate);
+inline Matrix4x4 MakeRotateAxisAngle(const Vector3& axis, float angle);
 inline Matrix4x4 MakeTranslateMatrix(const Vector3& translate);
 inline Matrix4x4 MakeAffineMatrix(const Vector3& scale, const Vector3& rotate, const Vector3& translate);
 Matrix4x4 MakePerspectiveFovMatrix(float fovY, float aspect, float nearZ, float farZ);
