@@ -44,11 +44,14 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
     RenderingPipeline renderingPipeline{};
     renderingPipeline.Initalize(static_cast<float>(kWindowWidth), static_cast<float>(kWindowHeight));
 
-    Quaternion rotation = Quaternion::MakeFromAxisAngle(Normalize({ 1.0f, 0.4f, -0.2f }), 0.45f);
-    Vector3 pointY = { 2.1f, -0.9f, 1.3f };
-    Matrix4x4 rotateMatrix = MakeRotateMatrix(rotation);
-    Vector3 rotateByQuaternion = rotation.ApplyRotate(pointY);
-    Vector3 rotateByMatrix = Transform(pointY, rotateMatrix);
+    Quaternion rotation0 = Quaternion::MakeFromAxisAngle(Normalize({ 0.71f, 0.71f, -0.0f }), 0.3f);
+    Quaternion rotation1 = Quaternion::MakeFromAxisAngle(Normalize({ 0.71f, 0.0f, 0.71f }), 3.141592f);
+
+    Quaternion interpolate0 = Slerp(rotation0, rotation1, 0.0f);
+    Quaternion interpolate1 = Slerp(rotation0, rotation1, 0.3f);
+    Quaternion interpolate2 = Slerp(rotation0, rotation1, 0.5f);
+    Quaternion interpolate3 = Slerp(rotation0, rotation1, 0.7f);
+    Quaternion interpolate4 = Slerp(rotation0, rotation1, 1.0f);
 
     // ウィンドウの×ボタンが押されるまでループ
     while (Novice::ProcessMessage() == 0) {
@@ -61,10 +64,11 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
         MoveCamera(renderingPipeline);
 
-        ImGui::TextQuaternion("Rotation", rotation);
-        ImGui::TextMatrix("RotateMatrix", rotateMatrix);
-        ImGui::TextVector3("RotateByQuaternion", rotateByQuaternion);
-        ImGui::TextVector3("RotateByMatrix", rotateByMatrix);
+        ImGui::TextQuaternion("Rotation0, Slerp(q0, q1, 0.0f)", interpolate0);
+        ImGui::TextQuaternion("Rotation1, Slerp(q0, q1, 3.0f)", interpolate1);
+        ImGui::TextQuaternion("Rotation2, Slerp(q0, q1, 5.0f)", interpolate2);
+        ImGui::TextQuaternion("Rotation3, Slerp(q0, q1, 7.0f)", interpolate3);
+        ImGui::TextQuaternion("Rotation4, Slerp(q0, q1, 1.0f)", interpolate4);
 
         ///
         /// ↑更新処理ここまで

@@ -4,6 +4,18 @@
 
 const Quaternion Quaternion::identity{ 0.0f,0.0f,0.0f,1.0f };
 
+Quaternion operator+(const Quaternion& lhs, const Quaternion& rhs) {
+    return { lhs.x + rhs.x, lhs.y + rhs.y, lhs.z + rhs.z, lhs.w + rhs.w };
+}
+
+Quaternion operator*(float lhs, const Quaternion& rhs) {
+    return { lhs * rhs.x, lhs * rhs.y, lhs * rhs.z, lhs * rhs.w };
+}
+
+Quaternion operator*(const Quaternion& lhs, float rhs) {
+    return { lhs.x * rhs, lhs.y * rhs, lhs.z * rhs, lhs.w * rhs };
+}
+
 Quaternion operator*(const Quaternion& lhs, const Quaternion& rhs) {
     return {
         lhs.y * rhs.z - lhs.z * rhs.y + lhs.x * rhs.w + lhs.w * rhs.x,
@@ -11,6 +23,25 @@ Quaternion operator*(const Quaternion& lhs, const Quaternion& rhs) {
         lhs.x * rhs.y - lhs.y * rhs.x + lhs.z * rhs.w + lhs.w * rhs.z,
         lhs.w * rhs.w - lhs.x * rhs.x - lhs.y * rhs.y - lhs.z * rhs.z
     };
+}
+
+Quaternion Slerp(const Quaternion& q0, const Quaternion& q1, float t) {
+    // q0'
+    Quaternion q0d = q0;
+    float dot = q0.x * q1.x + q0.y * q1.y + q0.z * q1.z + q0.w * q1.w;
+
+    if (dot < 0.0f) {
+        q0d.x = -q0d.x;
+        q0d.y = -q0d.y;
+        q0d.z = -q0d.z;
+        q0d.w = -q0d.w;
+        dot = -dot;
+    }
+    float theta = std::acos(dot);
+    float sinReci = 1.0f / std::sin(theta);
+    float scale0 = std::sin((1.0f - t) * theta) * sinReci;
+    float scale1 = std::sin(t * theta) * sinReci;
+    return scale0 * q0d + scale1 * q1;
 }
 
 Matrix4x4 MakeRotateMatrix(const Quaternion& rotate) {

@@ -9,8 +9,13 @@ struct Quaternion {
     Quaternion() : x(0.0f), y(0.0f), z(0.0f), w(1.0f) {}
     Quaternion(float x, float y, float z, float w) : x(x), y(y), z(z), w(w) {}
 
+    friend Quaternion operator+(const Quaternion& lhs, const Quaternion& rhs);
+    friend Quaternion operator*(float lhs, const Quaternion& rhs);
+    friend Quaternion operator*(const Quaternion& lhs, float rhs);
     friend Quaternion operator*(const Quaternion& lhs, const Quaternion& rhs);
 
+    friend Quaternion Slerp(const Quaternion& q0, const Quaternion& q1, float t);
+    
     Quaternion Conjugate() const;
     float Norm() const;
     Quaternion Normalized() const;
