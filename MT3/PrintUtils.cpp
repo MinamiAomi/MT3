@@ -46,6 +46,10 @@ namespace ImGui {
             v.x, v.y, v.z, v.w);
     }
 
+    void TextQuaternion(const char* label, const Quaternion& v) {
+        TextVector4(label, { v.x, v.y , v.z, v.w });
+    }
+
     void TextMatrix(const char* label, const Matrix4x4& m) {
         std::string str(label);
         str += "\n";

@@ -110,6 +110,7 @@
     <ClCompile Include="Geometry.cpp" />
     <ClCompile Include="Physics.cpp" />
     <ClCompile Include="PrintUtils.cpp" />
+    <ClCompile Include="Quaternion.cpp" />
     <ClCompile Include="RenderingPipeline.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="MyMath.cpp" />
@@ -145,6 +146,7 @@
     <ClInclude Include="Geometry.h" />
     <ClInclude Include="Physics.h" />
     <ClInclude Include="PrintUtils.h" />
+    <ClInclude Include="Quaternion.h" />
     <ClInclude Include="ReneringPipeline.h" />
     <ClInclude Include="MyMath.h" />
     <ClInclude Include="MyMath_inline.h" />
