@@ -29,7 +29,8 @@ Quaternion Slerp(const Quaternion& q0, const Quaternion& q1, float t) {
     // q0'
     Quaternion q0d = q0;
     float dot = q0.x * q1.x + q0.y * q1.y + q0.z * q1.z + q0.w * q1.w;
-
+    
+    // 最短経路を使用
     if (dot < 0.0f) {
         q0d.x = -q0d.x;
         q0d.y = -q0d.y;
@@ -37,6 +38,13 @@ Quaternion Slerp(const Quaternion& q0, const Quaternion& q1, float t) {
         q0d.w = -q0d.w;
         dot = -dot;
     }
+
+    // 特異点
+    constexpr float EPSILON = 0.0001f;
+    if (dot >= 1.0f - EPSILON) {
+        return (1.0f - t) * q0d + t * q1;
+    }
+  
     float theta = std::acos(dot);
     float sinReci = 1.0f / std::sin(theta);
     float scale0 = std::sin((1.0f - t) * theta) * sinReci;
