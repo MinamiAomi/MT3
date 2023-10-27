@@ -271,6 +271,22 @@ inline Matrix4x4 MakeRotateAxisAngle(const Vector3& n, float angle) {
         n.x * n.z * invC + n.y * s, n.y * n.z * invC - n.x * s,     n.z * n.z * invC + c,       0.0f,
         0.0f, 0.0f, 0.0f, 1.0f };
 }
+inline Matrix4x4 DirectionToDirection(const Vector3& from, const Vector3& to) {
+    Vector3 cross = Cross(from, to);
+    float s = Length(cross), c = Dot(from, to);
+
+    Vector3 n = {};
+    if (s > 0.0f) { n = Normalize(cross); }
+    else if (from.x != 0.0f || from.y != 0.0f) { n = { from.y, -from.x, 0.0f }; }
+    else if (from.x != 0.0f || from.z != 0.0f) { n = { from.y, 0.0f, -from.x }; }
+
+    float invC = 1.0f - c;
+    return {
+        n.x * n.x * invC + c,       n.x * n.y * invC + n.z * s,     n.x * n.z * invC - n.y * s, 0.0f,
+        n.x * n.y * invC - n.z * s, n.y * n.y * invC + c,           n.y * n.z * invC + n.x * s, 0.0f,
+        n.x * n.z * invC + n.y * s, n.y * n.z * invC - n.x * s,     n.z * n.z * invC + c,       0.0f,
+        0.0f, 0.0f, 0.0f, 1.0f };
+}
 inline Matrix4x4 MakeTranslateMatrix(const Vector3& translate) {
     return {
         1.0f,			0.0f,			0.0f,			0.0f,

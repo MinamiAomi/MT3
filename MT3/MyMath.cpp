@@ -247,6 +247,7 @@ Matrix4x4 MakeViewportMatrix(float left, float top, float width, float height, f
 		left + halfWidth,	top + halfHeight,	minDepth,				1.0f };
 }
 
+
 Vector3 Transform(const Vector3& v, const Matrix4x4& m) {
 	Vector3 result = {};
 	result.x = v.x * m.m[0][0] + v.y * m.m[1][0] + v.z * m.m[2][0] + 1.0f * m.m[3][0];

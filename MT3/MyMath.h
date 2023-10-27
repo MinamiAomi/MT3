@@ -94,6 +94,7 @@ inline Matrix4x4 MakeAffineMatrix(const Vector3& scale, const Vector3& rotate, c
 Matrix4x4 MakePerspectiveFovMatrix(float fovY, float aspect, float nearZ, float farZ);
 Matrix4x4 MakeOrthographicMatrix(float left, float top, float right, float bottom, float nearZ, float farZ);
 Matrix4x4 MakeViewportMatrix(float left, float top, float width, float height, float minDepth, float maxDepth);
+inline Matrix4x4 DirectionToDirection(const Vector3& from, const Vector3& to);
 
 inline Vector3 GetXAxis(const Matrix4x4& m);
 inline Vector3 GetYAxis(const Matrix4x4& m);
