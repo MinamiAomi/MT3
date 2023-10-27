@@ -10,7 +10,6 @@
 #include "Physics.h"
 
 #include "Math/Utils.h"
-#include "Quaternion.h"
 
 const char kWindowTitle[] = "LE2A_19_ミナミアオミ";
 const uint32_t kWindowWidth = 1280;
@@ -45,16 +44,11 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
     RenderingPipeline renderingPipeline{};
     renderingPipeline.Initalize(static_cast<float>(kWindowWidth), static_cast<float>(kWindowHeight));
 
-    Quaternion q1 = { 2.0f, 3.0f, 4.0f, 1.0f };
-    Quaternion q2 = { 1.0f, 3.0f, 5.0f, 2.0f };
-    Quaternion identity = Quaternion::identity;
-    Quaternion conjugate = q1.Conjugate();
-    Quaternion inverse = q1.Inverse();
-    Quaternion normal = q1.Normalized();
-    Quaternion mul1 = q1 * q2;
-    Quaternion mul2 = q2 * q1;
-    float norm = q1.Norm();
-
+    Quaternion rotation = Quaternion::MakeFromAxisAngle(Normalize({ 1.0f, 0.4f, -0.2f }), 0.45f);
+    Vector3 pointY = { 2.1f, -0.9f, 1.3f };
+    Matrix4x4 rotateMatrix = MakeRotateMatrix(rotation);
+    Vector3 rotateByQuaternion = rotation.ApplyRotate(pointY);
+    Vector3 rotateByMatrix = Transform(pointY, rotateMatrix);
 
     // ウィンドウの×ボタンが押されるまでループ
     while (Novice::ProcessMessage() == 0) {
@@ -67,13 +61,10 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
         MoveCamera(renderingPipeline);
 
-        ImGui::TextQuaternion("Identity", identity);
-        ImGui::TextQuaternion("Conjugate", conjugate);
-        ImGui::TextQuaternion("Inverse", inverse);
-        ImGui::TextQuaternion("Normalize", normal);
-        ImGui::TextQuaternion("q1 * q2", mul1);
-        ImGui::TextQuaternion("q2 * q1", mul2);
-        ImGui::Text("Norm\n%0.3f", norm);
+        ImGui::TextQuaternion("Rotation", rotation);
+        ImGui::TextMatrix("RotateMatrix", rotateMatrix);
+        ImGui::TextVector3("RotateByQuaternion", rotateByQuaternion);
+        ImGui::TextVector3("RotateByMatrix", rotateByMatrix);
 
         ///
         /// ↑更新処理ここまで
