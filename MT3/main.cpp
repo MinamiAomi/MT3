@@ -87,6 +87,13 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
         ///
         /// ↓更新処理ここから
         ///
+        /// 
+        
+        ImGui::Begin("NNN");
+        auto& io = ImGui::GetIO();
+        ImGui::Text("FPS : %f", io.Framerate);
+        ImGui::End();
+
 
         MoveCamera(renderingPipeline);
 
