@@ -257,6 +257,15 @@ inline Matrix4x4 MakeRotateXYZMatrix(const Vector3& rotate) {
         c.x * s.y * c.z + s.x * s.z,	c.x * s.y * s.z - s.x * c.z,	c.x * c.y,	0.0f,
         0.0f,	0.0f,	0.0f,	1.0f };
 }
+inline Matrix4x4 MakeRotateAxisAngle(const Vector3& n, float angle) {
+    float s = std::sin(angle), c = std::cos(angle);
+    float invC = 1.0f - c;
+    return {
+        n.x * n.x * invC + c,       n.x * n.y * invC + n.z * s,     n.x * n.z * invC - n.y * s, 0.0f,
+        n.x * n.y * invC - n.z * s, n.y * n.y * invC + c,           n.y * n.z * invC + n.x * s, 0.0f,
+        n.x * n.z * invC + n.y * s, n.y * n.z * invC - n.x * s,     n.z * n.z * invC + c,       0.0f,
+        0.0f, 0.0f, 0.0f, 1.0f };
+}
 inline Matrix4x4 MakeTranslateMatrix(const Vector3& translate) {
     return {
         1.0f,			0.0f,			0.0f,			0.0f,

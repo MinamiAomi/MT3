@@ -28,20 +28,6 @@ void MoveCamera(RenderingPipeline& renderingPipeline);
 
 Geometry::Ray MouseRay(const RenderingPipeline& renderingPipeline);
 
-struct Ball : public PhysicsObject {
-    float radius;
-    uint32_t color;
-};
-
-Vector3 RandomPoint(const Vector3& min, const Vector3& max) {
-    Vector3 p{}; min, max;
-   /* constexpr float r = 1.0f / RAND_MAX;
-    p.x = Math::Lerp(min.x, max.x, std::rand() * r);
-    p.y = Math::Lerp(min.y, max.y, std::rand() * r);
-    p.z = Math::Lerp(min.z, max.z, std::rand() * r);*/
-    return p;
-}
-
 // Windowsアプリでのエントリーポイント(main関数)
 int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
@@ -56,28 +42,10 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
     renderingPipeline.Initalize(static_cast<float>(kWindowWidth), static_cast<float>(kWindowHeight));
 
 
-    PhysicsObject obj{};
-    obj.position = { 0.8f,0.0f, 0.0f };
-    obj.mass = 1.0f;
-
-    /* Pendulm pendulm{};
-     pendulm.anchor = { 0.0f,0.0f,0.0f };
-     pendulm.length = 0.8f;
-     pendulm.angle = 90.0f * Math::ToRadian;
-
-     obj.position = pendulm.ComputePosition();*/
-
-    float angulerVelocity = Math::Pi;
-    float angle = 0.0f;
-    float length = 0.8f;
-
-    float deltaTime = 1.0f / 60.0f;
-
-    bool stop = true;
-
-    Vector3 hsv{};
-
-    // const float gravityAcceleration = 9.8f;
+    Vector3 axis = Normalize({ 1.0f,1.0f,1.0f });
+    float angle = 0.44f;
+    Matrix4x4 rotateMatrix = MakeRotateAxisAngle(axis, angle);
+   
 
      // ウィンドウの×ボタンが押されるまでループ
     while (Novice::ProcessMessage() == 0) {
@@ -97,31 +65,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
         MoveCamera(renderingPipeline);
 
-        {
-            ImGui::SetNextWindowPos({ (float)kWindowWidth - 330.0f, 0.0f }, ImGuiCond_Once);
-            ImGui::SetNextWindowSize({ 330.0f, 500.0f }, ImGuiCond_Once);
-            ImGui::Begin("Window");
-
-            stop = stop ? !ImGui::Button("Start", { 50,0 }) : ImGui::Button("Stop", { 50,0 });
-
-            ImGui::DragFloat3("HSV", &hsv.x, 0.01f, 0.0f, 1.0f);
-
-
-            ImGui::End();
-        }
-
-        if (!stop) {
-
-            /* pendulm.UpdateAngle(deltaTime, gravityAcceleration);
-             obj.position = pendulm.ComputePosition();*/
-
-            angle += angulerVelocity * deltaTime;
-
-            obj.position.x = std::cos(angle) * length;
-            obj.position.y = std::sin(angle) * length;
-        }
-
-        // ドラッグ処理
+  
+        ImGui::TextMatrix("RotateMatrix", rotateMatrix);
 
 
         ///
@@ -134,8 +79,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
         renderingPipeline.DrawGrid(4);
 
-        Novice::DrawBox(0, 0, 200, 200, 0.0f, Math::Color::HSVA(hsv.x, hsv.y, hsv.z), kFillModeSolid);
-
+  
 
         renderingPipeline.DrawAxis();
 
@@ -186,11 +130,11 @@ void MoveCamera(RenderingPipeline& renderingPipeline) {
     ImGui::SetNextWindowPos({ 0.0f, 0.0f }, ImGuiCond_Once);
     ImGui::SetNextWindowSize({ 300.0f, 100.0f }, ImGuiCond_Once);
     ImGui::Begin("Camera");
-    ImGui::DragFloat3("Camera position", &renderingPipeline.cameraPosition.x, 0.01f);
+    ImGui::DragFloat3("Position", &renderingPipeline.cameraPosition.x, 0.01f);
     Vector3 deg = renderingPipeline.cameraRotate * Math::ToDegree;
-    ImGui::DragFloat3("Camera rotate", &deg.x, 0.1f, 0.0f, 360.0f);
+    ImGui::DragFloat3("Rotate", &deg.x, 0.1f, 0.0f, 360.0f);
     renderingPipeline.cameraRotate = deg * Math::ToRadian;
-    if (ImGui::Button("Camera reset")) {
+    if (ImGui::Button("Reset")) {
         renderingPipeline.cameraRotate = { 15.0f * Math::ToDegree, 0.0f, 0.0f };
         Vector3 forward = GetZAxis(MakeRotateXYZMatrix(renderingPipeline.cameraRotate));
         renderingPipeline.cameraPosition = -forward * 6.0f;
