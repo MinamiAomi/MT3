@@ -46,7 +46,7 @@ Vector3 ClosestPoint(const OBB& obb, const Sphere& sphere) {
 	Matrix4x4 obbWorldInverse = MakeInverseMatrix(obbRotateMatrix, obb.center);
 
 	Vector3 centerInOBBLocalSpace = sphere.center * obbWorldInverse;
-	AABB aabbOBBLocal{ .min = -obb.size, .max = obb.size };
+	AABB aabbOBBLocal{ .min = -obb.size * 0.5f, .max = obb.size * 0.5f };
 	Sphere sphereObbLocal{ centerInOBBLocalSpace, sphere.radius };
 
 	return ClosestPoint(aabbOBBLocal, sphereObbLocal) * obbWorld;

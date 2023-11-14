@@ -218,16 +218,17 @@ void RenderingPipeline::DrawAABB(const AABB& aabb, uint32_t color) {
 }
 
 void RenderingPipeline::DrawOBB(const OBB& obb, uint32_t color) {
+	Vector3 halfSize = obb.size * 0.5f;
 	Vector3 vertices[] = {
-		-obb.size,
-		{-obb.size.x, obb.size.y, -obb.size.z},
-		{obb.size.x, obb.size.y, -obb.size.z},
-		{obb.size.x, -obb.size.y, -obb.size.z},
+		-halfSize,
+		{-halfSize.x, halfSize.y, -halfSize.z},
+		{halfSize.x, halfSize.y, -halfSize.z},
+		{halfSize.x, -halfSize.y, -halfSize.z},
 
-		{-obb.size.x, -obb.size.y, obb.size.z},
-		{-obb.size.x, obb.size.y, obb.size.z},
-		obb.size,
-		{obb.size.x, -obb.size.y, obb.size.z},
+		{-halfSize.x, -halfSize.y, halfSize.z},
+		{-halfSize.x, halfSize.y, halfSize.z},
+		halfSize,
+		{halfSize.x, -halfSize.y, halfSize.z},
 	};
 	Matrix4x4 worldMatrix = MakeRotateMatrixFromOrientations(obb.orientations);
 	SetTranslate(worldMatrix, obb.center);
