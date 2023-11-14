@@ -141,9 +141,9 @@ void RenderingPipeline::DrawCapsule(const Geometry::Capsule& capsule, uint32_t c
     const float kLonEvery = Math::TwoPi / kLonDiv;
 
     Matrix4x4 rotateMatrix = MakeIdentityMatrix();
-    if (std::abs(Dot(Normalize(capsule.segment.diff), Vector3UnitZ)) < 1.0f - 0.0001f) {
+    if (std::abs(Dot(Normalize(capsule.segment.diff), Vector3UnitX)) < 1.0f - 0.0001f) {
         Vector3 y = -Normalize(capsule.segment.diff);
-        Vector3 x = Normalize(Cross(-Vector3UnitZ, y));
+        Vector3 x = Normalize(Cross(-Vector3UnitX, y));
         Vector3 z = -Cross(y, x);
         SetXAxis(rotateMatrix, x);
         SetYAxis(rotateMatrix, y);

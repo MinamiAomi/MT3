@@ -44,14 +44,13 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
     RenderingPipeline renderingPipeline{};
     renderingPipeline.Initalize(static_cast<float>(kWindowWidth), static_cast<float>(kWindowHeight));
 
-    Quaternion rotation0 = Quaternion::MakeFromAxisAngle(Normalize({ 0.71f, 0.71f, -0.0f }), 0.3f);
-    Quaternion rotation1 = { -rotation0.x, -rotation0.y,-rotation0.z ,-rotation0.w };
+    Quaternion rotate;
+    Vector3 from{ 1.0f, 0.0f, 0.0f };
+    Vector3 to{ 0.0f, 1.0f, 0.0f };
 
-    Quaternion interpolate0 = Slerp(rotation0, rotation1, 0.0f);
-    Quaternion interpolate1 = Slerp(rotation0, rotation1, 0.3f);
-    Quaternion interpolate2 = Slerp(rotation0, rotation1, 0.5f);
-    Quaternion interpolate3 = Slerp(rotation0, rotation1, 0.7f);
-    Quaternion interpolate4 = Slerp(rotation0, rotation1, 1.0f);
+    float t = 0.0f;
+
+    bool drawGrid = false;
 
     // ウィンドウの×ボタンが押されるまでループ
     while (Novice::ProcessMessage() == 0) {
@@ -64,22 +63,42 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
         MoveCamera(renderingPipeline);
 
-        ImGui::TextQuaternion("Rotation0, Slerp(q0, q1, 0.0f)", interpolate0);
-        ImGui::TextQuaternion("Rotation1, Slerp(q0, q1, 3.0f)", interpolate1);
-        ImGui::TextQuaternion("Rotation2, Slerp(q0, q1, 5.0f)", interpolate2);
-        ImGui::TextQuaternion("Rotation3, Slerp(q0, q1, 7.0f)", interpolate3);
-        ImGui::TextQuaternion("Rotation4, Slerp(q0, q1, 1.0f)", interpolate4);
+        ImGui::Checkbox("DrawGrid", &drawGrid);
 
-        ///
+        ImGui::Begin("AA");
+        ImGui::DragFloat3("from", &from.x, 0.01f, -1.0f, 1.0f);
+        ImGui::DragFloat3("to", &to.x, 0.01f, -1.0f, 1.0f);
+        ImGui::DragFloat("t", &t, 0.01f, 0.0f, 1.0f);
+
+        Vector3 axis = Normalize(Cross(from, to));
+        float angle = std::acos(Dot(Normalize(from), Normalize(to)));
+        rotate = Quaternion::MakeFromAxisAngle(axis, angle);
+
+        ImGui::End();
+
         /// ↑更新処理ここまで
         ///
 
         ///
         /// ↓描画処理ここから
         ///
+        if (drawGrid) {
+            renderingPipeline.DrawGrid(4);
+        }
+        
+        Quaternion q = Slerp(Quaternion::identity, rotate, t);
 
-        renderingPipeline.DrawGrid(4);
+        Geometry::Segment segment{};
+        segment.origin = Vector3Zero;
+        segment.diff = q.ApplyRotate(Vector3UnitX);
+        renderingPipeline.DrawSegment(segment, RED);
+        segment.diff = q.ApplyRotate(Vector3UnitY);
+        renderingPipeline.DrawSegment(segment, GREEN);
+        segment.diff = q.ApplyRotate(Vector3UnitZ);
+        renderingPipeline.DrawSegment(segment, BLUE);
 
+        renderingPipeline.DrawLine({ Vector3Zero, from }, BLACK);
+        renderingPipeline.DrawLine({ Vector3Zero, to }, WHITE);
 
         renderingPipeline.DrawAxis();
 

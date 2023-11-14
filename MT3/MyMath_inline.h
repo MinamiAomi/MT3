@@ -278,7 +278,7 @@ inline Matrix4x4 DirectionToDirection(const Vector3& from, const Vector3& to) {
     Vector3 n = {};
     if (s > 0.0f) { n = Normalize(cross); }
     else if (from.x != 0.0f || from.y != 0.0f) { n = { from.y, -from.x, 0.0f }; }
-    else if (from.x != 0.0f || from.z != 0.0f) { n = { from.y, 0.0f, -from.x }; }
+    else if (from.x != 0.0f || from.z != 0.0f) { n = { from.z, 0.0f, -from.x }; }
 
     float invC = 1.0f - c;
     return {

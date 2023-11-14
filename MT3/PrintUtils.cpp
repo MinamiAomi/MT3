@@ -2,6 +2,8 @@
 #include "Novice.h"
 #include "ImGuiManager.h"
 
+#include <string>
+
 void VectorScreenPrintf(int x, int y, const Vector2& v, const char* label) {
     constexpr int kColumnWidth = 60;
     Novice::ScreenPrintf(x, y, "%.02f", v.x);
