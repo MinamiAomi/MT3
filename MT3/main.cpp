@@ -125,18 +125,28 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 		{
 			Vector3 rayOrigin = cameraPos;
+			//Vector4 v = Multiply({ 0.0f,0.0f,0.0f,1.0f }, viewProjMatInv);
+			Vector3 g{ viewProjMatInv.m[3][0],viewProjMatInv.m[3][1],viewProjMatInv.m[3][2] };
+			rayOrigin = g;
+
 			Vector3 lineStart = renderingPipeline.Apply(cameraPos);
 			Vector2 dimention{ static_cast<float>(width), static_cast<float>(height) };
 			for (uint32_t y = 0; y < height; y++) {
 				for (uint32_t x = 0; x < width; x++) {
 					Vector2 launchIndex{ static_cast<float>(x), static_cast<float>(y) };
 					Vector2 xy = launchIndex + Vector2(0.5f, 0.5f);
-					xy.x = xy.x / dimention.x * 2.0f - 1.0f;
-					xy.y = 1.0f - xy.y / dimention.y * 2.0f;
+					/*xy.x = xy.x / dimention.x * 2.0f - 1.0f;
+					xy.y = 1.0f - xy.y / dimention.y * 2.0f;*/
+
+					xy.x *= 2.0f / dimention.x;
+					xy.y *= -2.0f / dimention.y;
+					xy.x += -1.0f;
+					xy.y += 1.0f;
+
 					Vector4 hom = Multiply({ xy.x,xy.y,0.0f,1.0f }, viewProjMatInv);
 					Vector3 worldPos{ hom.x,hom.y,hom.z };
-					worldPos *= 1.0f / hom.w;	
-					Vector3 rayDirection = Normalize(worldPos - rayOrigin);
+					 //worldPos *= 1.0f / hom.w;	
+					Vector3 rayDirection = worldPos - rayOrigin;
 
 					Vector3 lineEnd = renderingPipeline.Apply(rayDirection + rayOrigin);
 					renderingPipeline.ScreenDrawLine(lineStart, lineEnd, GREEN);
